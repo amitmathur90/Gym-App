@@ -42,13 +42,13 @@ export default function TrainerDietPlansPage() {
             <Card key={plan.id} className="p-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="font-semibold text-slate-900">{plan.name}</div>
-                  <div className="text-sm text-slate-500">{plan.member.name}</div>
+                  <div className="font-semibold text-text">{plan.name}</div>
+                  <div className="text-sm text-text-muted">{plan.member.name}</div>
                   <div className="flex gap-2 mt-1">
                     {plan.targetWaterMl && <Badge>💧 {(plan.targetWaterMl / 1000).toFixed(1)}L/day</Badge>}
                     {plan.supplements && <Badge color="amber">💊 {plan.supplements}</Badge>}
                   </div>
-                  {plan.notes && <p className="text-sm text-slate-600 mt-2">{plan.notes}</p>}
+                  {plan.notes && <p className="text-sm text-text-muted mt-2">{plan.notes}</p>}
                 </div>
                 <Button variant="danger" onClick={() => confirm('Delete this diet plan?') && deletePlan.mutate(plan.id)}>
                   Delete
@@ -61,19 +61,19 @@ export default function TrainerDietPlansPage() {
                 {plan.meals.length} meal{plan.meals.length === 1 ? '' : 's'} {expanded[plan.id] ? '▲' : '▼'}
               </button>
               {expanded[plan.id] && (
-                <div className="mt-2 border border-slate-100 rounded-lg divide-y divide-slate-100">
+                <div className="mt-2 border border-border rounded-lg divide-y divide-border">
                   {DAY_NAMES.map((dayName, dayIdx) => {
                     const dayMeals = plan.meals.filter((m) => m.dayOfWeek === dayIdx)
                     if (dayMeals.length === 0) return null
                     return (
                       <div key={dayIdx} className="px-3 py-2">
-                        <div className="text-xs font-semibold text-slate-500 mb-1">{dayName}</div>
+                        <div className="text-xs font-semibold text-text-muted mb-1">{dayName}</div>
                         {dayMeals.map((m) => (
                           <div key={m.id} className="flex justify-between text-sm py-0.5">
                             <span>
                               <Badge>{m.mealType}</Badge> <span className="ml-1">{m.foodItem.name}</span>
                             </span>
-                            <span className="text-slate-500">
+                            <span className="text-text-muted">
                               {m.foodItem.calories} kcal · {m.foodItem.proteinG}g P / {m.foodItem.carbsG}g C /{' '}
                               {m.foodItem.fatsG}g F
                             </span>
@@ -86,7 +86,7 @@ export default function TrainerDietPlansPage() {
               )}
             </Card>
           ))}
-          {data.length === 0 && <p className="text-slate-400 text-center py-16">No diet plans assigned yet.</p>}
+          {data.length === 0 && <p className="text-text-faint text-center py-16">No diet plans assigned yet.</p>}
         </div>
       )}
 
@@ -181,7 +181,7 @@ function CreateDietPlanModal({ onClose, initialMemberId }: { onClose: () => void
         <input className={inputClass} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
 
-      <div className="text-sm font-medium text-slate-700 mb-2">Meals</div>
+      <div className="text-sm font-medium text-text mb-2">Meals</div>
       <div className="space-y-3 mb-3">
         {rows.map((row) => (
           <div key={row.key} className="grid grid-cols-12 gap-2 items-center">

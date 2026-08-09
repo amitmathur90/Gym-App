@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { api, apiErrorMessage } from '../../lib/api'
+import { useAuth } from '../../lib/auth'
 import { Card, ErrorState, PageHeader, Spinner, StatCard } from '../../components/ui'
 import type { DashboardData, Session } from '../../types/trainerSelf'
 
@@ -12,15 +13,16 @@ const RANGES = [
 ] as const
 
 const STATUS_COLORS: Record<string, string> = {
-  UPCOMING: 'bg-blue-100 text-blue-700',
-  IN_PROGRESS: 'bg-amber-100 text-amber-700',
-  COMPLETED: 'bg-green-100 text-green-700',
-  PENDING: 'bg-slate-100 text-slate-600',
-  CANCELLED: 'bg-red-100 text-red-700',
+  UPCOMING: 'bg-blue/15 text-blue',
+  IN_PROGRESS: 'bg-orange/15 text-orange',
+  COMPLETED: 'bg-green/15 text-green',
+  PENDING: 'bg-surface-hover text-text-muted',
+  CANCELLED: 'bg-red/15 text-red',
 }
 
 export default function TrainerDashboardPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [range, setRange] = useState<(typeof RANGES)[number]['value']>('today')
 
   const { data, isLoading, error } = useQuery<DashboardData>({
@@ -48,21 +50,29 @@ export default function TrainerDashboardPage() {
 
   return (
     <div>
-      <PageHeader title="Dashboard" subtitle="Everything you need to manage your members, in one place" />
+      <PageHeader
+        title={`Welcome back${user?.name ? `, ${user.name.split(' ')[0]}` : ''}! 👋`}
+        subtitle="Everything you need to manage your members, in one place"
+      />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Total Assigned Members" value={String(data.totalAssignedMembers)} icon="👥" />
-        <StatCard label="Today's Training Sessions" value={String(data.todaysSessions)} icon="🏋️" />
-        <StatCard label="Upcoming Sessions (7d)" value={String(data.upcomingSessions)} icon="📅" />
-        <StatCard label="Pending Workout Plans" value={String(data.pendingWorkoutPlans)} icon="⏳" />
-        <StatCard label="Completed Sessions Today" value={String(data.completedSessionsToday)} icon="✅" />
-        <StatCard label="Unread Messages" value={String(data.unreadMessages)} icon="💬" />
-        <StatCard label="Average Rating" value={data.averageRating != null ? data.averageRating.toFixed(1) : 'N/A'} icon="⭐" />
-        <StatCard label="New Members This Month" value={String(data.newAssignmentsThisMonth)} icon="📈" />
+        <StatCard label="Total Assigned Members" value={String(data.totalAssignedMembers)} icon="👥" color="pink" />
+        <StatCard label="Today's Training Sessions" value={String(data.todaysSessions)} icon="🏋️" color="purple" />
+        <StatCard label="Upcoming Sessions (7d)" value={String(data.upcomingSessions)} icon="📅" color="blue" />
+        <StatCard label="Pending Workout Plans" value={String(data.pendingWorkoutPlans)} icon="⏳" color="orange" />
+        <StatCard label="Completed Sessions Today" value={String(data.completedSessionsToday)} icon="✅" color="green" />
+        <StatCard label="Unread Messages" value={String(data.unreadMessages)} icon="💬" color="pink" />
+        <StatCard
+          label="Average Rating"
+          value={data.averageRating != null ? data.averageRating.toFixed(1) : 'N/A'}
+          icon="⭐"
+          color="orange"
+        />
+        <StatCard label="New Members This Month" value={String(data.newAssignmentsThisMonth)} icon="📈" color="purple" />
       </div>
 
       <Card className="p-5 mb-6">
-        <div className="font-semibold text-slate-900 mb-3">Quick Actions</div>
+        <div className="font-semibold text-text mb-3">Quick Actions</div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <QuickAction icon="➕" label="Add Workout Plan" onClick={() => navigate('/trainer/workout-plans')} />
           <QuickAction icon="🥗" label="Add Diet Plan" onClick={() => navigate('/trainer/diet-plans')} />
@@ -84,15 +94,15 @@ export default function TrainerDashboardPage() {
       </Card>
 
       <Card>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-          <div className="font-semibold text-slate-900">Schedule</div>
-          <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <div className="font-semibold text-text">Schedule</div>
+          <div className="flex gap-1 bg-surface-hover rounded-lg p-1">
             {RANGES.map((r) => (
               <button
                 key={r.value}
                 onClick={() => setRange(r.value)}
                 className={`px-3 py-1 text-sm rounded-md font-medium ${
-                  range === r.value ? 'bg-white text-primary shadow-sm' : 'text-slate-500'
+                  range === r.value ? 'bg-surface-raised text-primary shadow-sm' : 'text-text-muted'
                 }`}
               >
                 {r.label}
@@ -107,7 +117,7 @@ export default function TrainerDashboardPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-left text-slate-500">
+              <tr className="border-b border-border text-left text-text-muted">
                 <th className="px-4 py-3 font-medium">Time</th>
                 <th className="px-4 py-3 font-medium">Member</th>
                 <th className="px-4 py-3 font-medium">Session Type</th>
@@ -116,8 +126,8 @@ export default function TrainerDashboardPage() {
             </thead>
             <tbody>
               {scheduleQuery.data.map((s) => (
-                <tr key={s.id} className="border-b border-slate-100 last:border-0">
-                  <td className="px-4 py-3 text-slate-900">
+                <tr key={s.id} className="border-b border-border last:border-0">
+                  <td className="px-4 py-3 text-text">
                     {new Date(s.startTime).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
                   </td>
                   <td className="px-4 py-3">
@@ -125,7 +135,7 @@ export default function TrainerDashboardPage() {
                       {s.member.name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{s.sessionType ?? '—'}</td>
+                  <td className="px-4 py-3 text-text-muted">{s.sessionType ?? '—'}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[s.status]}`}>
                       {s.status}
@@ -135,7 +145,7 @@ export default function TrainerDashboardPage() {
               ))}
               {scheduleQuery.data.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center text-slate-400">
+                  <td colSpan={4} className="px-4 py-10 text-center text-text-faint">
                     Nothing scheduled.
                   </td>
                 </tr>
@@ -152,10 +162,10 @@ function QuickAction({ icon, label, onClick }: { icon: string; label: string; on
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg border border-slate-200 hover:border-primary hover:bg-primary/5 text-center transition-colors"
+      className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg border border-border hover:border-primary hover:bg-primary/5 text-center transition-colors"
     >
       <span className="text-xl">{icon}</span>
-      <span className="text-xs font-medium text-slate-700">{label}</span>
+      <span className="text-xs font-medium text-text">{label}</span>
     </button>
   )
 }

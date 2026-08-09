@@ -56,22 +56,24 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-sm bg-white rounded-xl border border-slate-200 shadow-sm p-8">
+    <div className="min-h-screen flex items-center justify-center bg-bg px-4">
+      <div className="w-full max-w-sm bg-surface-raised rounded-2xl border border-border shadow-xl p-8">
         <div className="text-center mb-6">
-          <div className="text-3xl mb-2">{active.icon}</div>
-          <h1 className="text-xl font-bold text-slate-900">{active.title}</h1>
-          <p className="text-sm text-slate-500 mt-1">{active.subtitle}</p>
+          <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-primary to-purple flex items-center justify-center text-2xl">
+            {active.icon}
+          </div>
+          <h1 className="text-xl font-bold text-text">{active.title}</h1>
+          <p className="text-sm text-text-muted mt-1">{active.subtitle}</p>
         </div>
 
-        <div className="flex gap-1 bg-slate-100 rounded-lg p-1 mb-6">
+        <div className="flex gap-1 bg-surface-hover rounded-lg p-1 mb-6">
           {TABS.map((t) => (
             <button
               key={t.key}
               type="button"
               onClick={() => switchTab(t.key)}
               className={`flex-1 px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
-                tab === t.key ? 'bg-white text-primary shadow-sm' : 'text-slate-500'
+                tab === t.key ? 'bg-surface-raised text-primary shadow-sm' : 'text-text-muted'
               }`}
             >
               {t.label}
@@ -81,7 +83,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit}>
           <label className="block mb-4">
-            <span className="block text-sm font-medium text-slate-700 mb-1">Email</span>
+            <span className="block text-sm font-medium text-text mb-1">Email</span>
             <input
               className={inputClass}
               type="email"
@@ -91,7 +93,7 @@ export default function LoginPage() {
             />
           </label>
           <label className="block mb-4">
-            <span className="block text-sm font-medium text-slate-700 mb-1">Password</span>
+            <span className="block text-sm font-medium text-text mb-1">Password</span>
             <input
               className={inputClass}
               type="password"
@@ -100,7 +102,7 @@ export default function LoginPage() {
               required
             />
           </label>
-          {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+          {error && <p className="text-sm text-red mb-4">{error}</p>}
           <button
             type="submit"
             disabled={loading}
@@ -109,7 +111,7 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
-        {active.hint && <p className="text-xs text-slate-400 mt-6 text-center">{active.hint}</p>}
+        {active.hint && <p className="text-xs text-text-faint mt-6 text-center">{active.hint}</p>}
       </div>
     </div>
   )

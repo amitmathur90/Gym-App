@@ -62,9 +62,9 @@ export default function TrainerProfilePage() {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between py-1.5 text-sm border-b border-slate-100 last:border-0">
-      <span className="text-slate-500">{label}</span>
-      <span className="text-slate-900 font-medium text-right">{value}</span>
+    <div className="flex justify-between py-1.5 text-sm border-b border-border last:border-0">
+      <span className="text-text-muted">{label}</span>
+      <span className="text-text font-medium text-right">{value}</span>
     </div>
   )
 }
@@ -80,7 +80,7 @@ function PersonalInfoCard({ trainer }: { trainer: TrainerProfile }) {
             {trainer.user.name[0]?.toUpperCase()}
           </div>
         )}
-        <div className="font-semibold text-slate-900">Personal Information</div>
+        <div className="font-semibold text-text">Personal Information</div>
       </div>
       <InfoRow label="Mobile" value={trainer.user.phone ?? '—'} />
       <InfoRow label="Email" value={trainer.user.email} />
@@ -95,7 +95,7 @@ function PersonalInfoCard({ trainer }: { trainer: TrainerProfile }) {
 function ProfessionalInfoCard({ trainer }: { trainer: TrainerProfile }) {
   return (
     <Card className="p-5">
-      <div className="font-semibold text-slate-900 mb-3">Professional Information</div>
+      <div className="font-semibold text-text mb-3">Professional Information</div>
       <InfoRow label="Trainer ID" value={trainer.id.slice(0, 8)} />
       <InfoRow label="Specialization" value={trainer.specialties.join(', ') || '—'} />
       <InfoRow label="Experience" value={trainer.experienceYears != null ? `${trainer.experienceYears} years` : '—'} />
@@ -104,7 +104,7 @@ function ProfessionalInfoCard({ trainer }: { trainer: TrainerProfile }) {
       <InfoRow label="Salary" value={trainer.salary ? `₹${Number(trainer.salary).toLocaleString()}/month` : '—'} />
       <InfoRow label="PT Session Rate" value={trainer.ratePerHour ? `₹${Number(trainer.ratePerHour)}/hr` : '—'} />
       <InfoRow label="Joining Date" value={trainer.joiningDate ? new Date(trainer.joiningDate).toLocaleDateString() : '—'} />
-      {trainer.bio && <p className="text-sm text-slate-600 mt-3">{trainer.bio}</p>}
+      {trainer.bio && <p className="text-sm text-text-muted mt-3">{trainer.bio}</p>}
     </Card>
   )
 }
@@ -113,16 +113,16 @@ function PerformanceCard({ trainer }: { trainer: TrainerProfile }) {
   const p = trainer.performance
   return (
     <Card className="p-5">
-      <div className="font-semibold text-slate-900 mb-3">Performance</div>
+      <div className="font-semibold text-text mb-3">Performance</div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         <Stat label="Total Members Assigned" value={String(p.totalMembersAssigned)} />
         <Stat label="Active Members" value={String(p.activeMembers)} />
         <Stat label="Diet Plans Created" value={String(p.dietPlansCreated)} />
         <Stat label="Average Rating" value={p.averageRating != null ? p.averageRating.toFixed(1) : 'Not tracked yet'} muted={p.averageRating == null} />
       </div>
-      <div className="text-sm font-medium text-slate-700 mb-2">Monthly assignments (last 6 months)</div>
+      <div className="text-sm font-medium text-text mb-2">Monthly assignments (last 6 months)</div>
       {p.monthlyAssignments.length === 0 ? (
-        <p className="text-sm text-slate-400">No assignments yet.</p>
+        <p className="text-sm text-text-faint">No assignments yet.</p>
       ) : (
         <ResponsiveContainer width="100%" height={160}>
           <BarChart data={p.monthlyAssignments}>
@@ -134,7 +134,7 @@ function PerformanceCard({ trainer }: { trainer: TrainerProfile }) {
           </BarChart>
         </ResponsiveContainer>
       )}
-      <p className="text-xs text-slate-400 mt-3">
+      <p className="text-xs text-text-faint mt-3">
         Attendance tracking and member ratings aren't implemented yet, so those metrics aren't shown here.
       </p>
     </Card>
@@ -144,8 +144,8 @@ function PerformanceCard({ trainer }: { trainer: TrainerProfile }) {
 function Stat({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
   return (
     <div>
-      <div className={`text-2xl font-bold ${muted ? 'text-slate-400 text-base' : 'text-slate-900'}`}>{value}</div>
-      <div className="text-xs text-slate-500">{label}</div>
+      <div className={`text-2xl font-bold ${muted ? 'text-text-faint text-base' : 'text-text'}`}>{value}</div>
+      <div className="text-xs text-text-muted">{label}</div>
     </div>
   )
 }
@@ -193,16 +193,16 @@ function AssignMembersSection({
 
   return (
     <Card className="p-5">
-      <div className="font-semibold text-slate-900 mb-3">Assign Members</div>
+      <div className="font-semibold text-text mb-3">Assign Members</div>
 
       {!selectedMember ? (
         <MemberSearchPicker onSelect={setSelectedMember} />
       ) : (
-        <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+        <div className="mb-4 p-3 bg-bg rounded-lg">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <div className="font-medium text-slate-900">{selectedMember.name}</div>
-              <div className="text-sm text-slate-500">{selectedMember.email}</div>
+              <div className="font-medium text-text">{selectedMember.name}</div>
+              <div className="text-sm text-text-muted">{selectedMember.email}</div>
             </div>
             <button className="text-sm text-primary" onClick={() => setSelectedMember(null)}>
               Change
@@ -245,17 +245,17 @@ function AssignMembersSection({
         </div>
       )}
 
-      <div className="mt-4 border-t border-slate-100 pt-3">
-        <div className="text-sm font-medium text-slate-700 mb-2">Assignment history ({assignments.length})</div>
+      <div className="mt-4 border-t border-border pt-3">
+        <div className="text-sm font-medium text-text mb-2">Assignment history ({assignments.length})</div>
         {assignments.length === 0 ? (
-          <p className="text-sm text-slate-400">No members assigned yet.</p>
+          <p className="text-sm text-text-faint">No members assigned yet.</p>
         ) : (
           <div className="space-y-2">
             {assignments.map((a) => (
-              <div key={a.id} className="flex items-center justify-between text-sm border-b border-slate-100 pb-2 last:border-0">
+              <div key={a.id} className="flex items-center justify-between text-sm border-b border-border pb-2 last:border-0">
                 <div>
-                  <div className="font-medium text-slate-900">{a.member.name}</div>
-                  <div className="text-slate-500 text-xs">
+                  <div className="font-medium text-text">{a.member.name}</div>
+                  <div className="text-text-muted text-xs">
                     {a.trainingType} · since {new Date(a.startDate).toLocaleDateString()}
                     {a.schedule && ` · ${a.schedule}`}
                   </div>
@@ -266,7 +266,7 @@ function AssignMembersSection({
                   </Badge>
                   {a.status === 'ACTIVE' && (
                     <select
-                      className="text-xs border border-slate-300 rounded px-1 py-0.5"
+                      className="text-xs border border-border rounded px-1 py-0.5"
                       value=""
                       onChange={(e) => e.target.value && updateStatus.mutate({ assignmentId: a.id, status: e.target.value })}
                     >
@@ -308,7 +308,7 @@ function TrainerScheduleSection({ trainerId }: { trainerId: string }) {
   return (
     <Card className="p-5">
       <div className="flex items-center justify-between mb-3">
-        <div className="font-semibold text-slate-900">Trainer Schedule</div>
+        <div className="font-semibold text-text">Trainer Schedule</div>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => setShowAddAvailability(true)}>
             + Availability Block
@@ -326,14 +326,14 @@ function TrainerScheduleSection({ trainerId }: { trainerId: string }) {
       ) : (
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <div className="text-sm font-medium text-slate-700 mb-2">Weekly availability</div>
+            <div className="text-sm font-medium text-text mb-2">Weekly availability</div>
             {DAY_NAMES.map((dayName, dayIdx) => {
               const blocks = data.availability.filter((a) => a.dayOfWeek === dayIdx)
               return (
                 <div key={dayIdx} className="mb-2">
-                  <div className="text-xs font-semibold text-slate-500">{dayName}</div>
+                  <div className="text-xs font-semibold text-text-muted">{dayName}</div>
                   {blocks.length === 0 ? (
-                    <div className="text-xs text-slate-400 pl-2">Off</div>
+                    <div className="text-xs text-text-faint pl-2">Off</div>
                   ) : (
                     blocks.map((b) => (
                       <div key={b.id} className="flex items-center justify-between text-sm pl-2">
@@ -351,9 +351,9 @@ function TrainerScheduleSection({ trainerId }: { trainerId: string }) {
               )
             })}
 
-            <div className="text-sm font-medium text-slate-700 mb-2 mt-4">Upcoming PT sessions</div>
+            <div className="text-sm font-medium text-text mb-2 mt-4">Upcoming PT sessions</div>
             {data.upcomingBookings.length === 0 ? (
-              <p className="text-xs text-slate-400">None scheduled.</p>
+              <p className="text-xs text-text-faint">None scheduled.</p>
             ) : (
               data.upcomingBookings.map((b) => (
                 <div key={b.id} className="text-sm">
@@ -362,9 +362,9 @@ function TrainerScheduleSection({ trainerId }: { trainerId: string }) {
               ))
             )}
 
-            <div className="text-sm font-medium text-slate-700 mb-2 mt-4">Upcoming group classes</div>
+            <div className="text-sm font-medium text-text mb-2 mt-4">Upcoming group classes</div>
             {data.upcomingClasses.length === 0 ? (
-              <p className="text-xs text-slate-400">None scheduled.</p>
+              <p className="text-xs text-text-faint">None scheduled.</p>
             ) : (
               data.upcomingClasses.map((c) => (
                 <div key={c.id} className="text-sm">
@@ -376,9 +376,9 @@ function TrainerScheduleSection({ trainerId }: { trainerId: string }) {
           </div>
 
           <div>
-            <div className="text-sm font-medium text-slate-700 mb-2">Upcoming holidays</div>
+            <div className="text-sm font-medium text-text mb-2">Upcoming holidays</div>
             {data.holidays.length === 0 ? (
-              <p className="text-xs text-slate-400 mb-4">None scheduled.</p>
+              <p className="text-xs text-text-faint mb-4">None scheduled.</p>
             ) : (
               <div className="space-y-1 mb-4">
                 {data.holidays.map((h) => (
@@ -395,8 +395,8 @@ function TrainerScheduleSection({ trainerId }: { trainerId: string }) {
               </div>
             )}
 
-            <div className="text-sm font-medium text-slate-700 mb-2">Weekly off</div>
-            <div className="text-sm text-slate-600">
+            <div className="text-sm font-medium text-text mb-2">Weekly off</div>
+            <div className="text-sm text-text-muted">
               {data.weeklyOffDays.length === 0 ? 'None' : data.weeklyOffDays.map((d) => DAY_NAMES[d]).join(', ')}
             </div>
           </div>

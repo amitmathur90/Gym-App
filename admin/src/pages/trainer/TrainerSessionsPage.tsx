@@ -43,7 +43,7 @@ export default function TrainerSessionsPage() {
         <Card>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-left text-slate-500">
+              <tr className="border-b border-border text-left text-text-muted">
                 <th className="px-4 py-3 font-medium">Time</th>
                 <th className="px-4 py-3 font-medium">Member</th>
                 <th className="px-4 py-3 font-medium">Duration</th>
@@ -57,14 +57,14 @@ export default function TrainerSessionsPage() {
               {data.map((s) => {
                 const durationMin = Math.round((new Date(s.endTime).getTime() - new Date(s.startTime).getTime()) / 60000)
                 return (
-                  <tr key={s.id} className="border-b border-slate-100 last:border-0">
-                    <td className="px-4 py-3 text-slate-900">
+                  <tr key={s.id} className="border-b border-border last:border-0">
+                    <td className="px-4 py-3 text-text">
                       {new Date(s.startTime).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
                     </td>
-                    <td className="px-4 py-3 font-medium text-slate-900">{s.member.name}</td>
-                    <td className="px-4 py-3 text-slate-600">{durationMin} min</td>
-                    <td className="px-4 py-3 text-slate-600">{s.sessionType ?? '—'}</td>
-                    <td className="px-4 py-3 text-slate-500 max-w-[160px] truncate">{s.notes ?? '—'}</td>
+                    <td className="px-4 py-3 font-medium text-text">{s.member.name}</td>
+                    <td className="px-4 py-3 text-text-muted">{durationMin} min</td>
+                    <td className="px-4 py-3 text-text-muted">{s.sessionType ?? '—'}</td>
+                    <td className="px-4 py-3 text-text-muted max-w-[160px] truncate">{s.notes ?? '—'}</td>
                     <td className="px-4 py-3">
                       <Badge color={STATUS_COLORS[s.status]}>{s.status}</Badge>
                     </td>
@@ -100,7 +100,7 @@ export default function TrainerSessionsPage() {
               })}
               {data.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-slate-400">
+                  <td colSpan={7} className="px-4 py-10 text-center text-text-faint">
                     No sessions scheduled this week.
                   </td>
                 </tr>

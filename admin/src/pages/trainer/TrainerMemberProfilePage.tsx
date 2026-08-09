@@ -51,10 +51,10 @@ export default function TrainerMemberProfilePage() {
         subtitle={member.email}
         actions={
           <div className="flex gap-2">
-            <Link to={`/trainer/workout-plans?memberId=${id}`} className="text-sm px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50">
+            <Link to={`/trainer/workout-plans?memberId=${id}`} className="text-sm px-4 py-2 rounded-lg border border-border hover:bg-bg">
               Workout Plan
             </Link>
-            <Link to={`/trainer/diet-plans?memberId=${id}`} className="text-sm px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50">
+            <Link to={`/trainer/diet-plans?memberId=${id}`} className="text-sm px-4 py-2 rounded-lg border border-border hover:bg-bg">
               Diet Plan
             </Link>
             <Link to={`/trainer/messages/${id}`} className="text-sm px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark">
@@ -67,17 +67,17 @@ export default function TrainerMemberProfilePage() {
       <Card className="p-5 mb-4">
         <div className="grid md:grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-slate-500">Phone:</span> <span className="font-medium">{member.phone ?? '—'}</span>
+            <span className="text-text-muted">Phone:</span> <span className="font-medium">{member.phone ?? '—'}</span>
           </div>
           <div>
-            <span className="text-slate-500">Membership:</span>{' '}
+            <span className="text-text-muted">Membership:</span>{' '}
             <span className="font-medium">{member.memberships[0]?.plan.name ?? '—'}</span>
           </div>
           <div>
-            <span className="text-slate-500">Gender:</span> <span className="font-medium">{member.gender ?? '—'}</span>
+            <span className="text-text-muted">Gender:</span> <span className="font-medium">{member.gender ?? '—'}</span>
           </div>
           <div>
-            <span className="text-slate-500">Goal:</span>{' '}
+            <span className="text-text-muted">Goal:</span>{' '}
             <span className="font-medium">{member.trainerAssignments[0]?.trainingType ?? '—'}</span>
           </div>
         </div>
@@ -125,18 +125,18 @@ function MeasurementsSection({ memberId }: { memberId: string }) {
   return (
     <Card className="p-5">
       <div className="flex items-center justify-between mb-3">
-        <div className="font-semibold text-slate-900">Body Measurements</div>
+        <div className="font-semibold text-text">Body Measurements</div>
         <Button variant="secondary" onClick={() => setShowForm((v) => !v)}>
           + Log
         </Button>
       </div>
 
       {showForm && (
-        <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+        <div className="mb-4 p-3 bg-bg rounded-lg">
           <div className="grid grid-cols-2 gap-3">
             {MEASUREMENT_FIELDS.map((f) => (
               <label key={f.key} className="text-xs">
-                <span className="block text-slate-600 mb-1">{f.label}</span>
+                <span className="block text-text-muted mb-1">{f.label}</span>
                 <input
                   className={inputClass}
                   type="number"
@@ -158,10 +158,10 @@ function MeasurementsSection({ memberId }: { memberId: string }) {
       ) : error || !data ? (
         <ErrorState message={apiErrorMessage(error)} />
       ) : data.length === 0 ? (
-        <p className="text-sm text-slate-400">No measurements logged yet.</p>
+        <p className="text-sm text-text-faint">No measurements logged yet.</p>
       ) : (
         <>
-          <div className="text-xs font-medium text-slate-600 mb-2">Weight & Body Fat Progress</div>
+          <div className="text-xs font-medium text-text-muted mb-2">Weight & Body Fat Progress</div>
           <ResponsiveContainer width="100%" height={160}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -174,7 +174,7 @@ function MeasurementsSection({ memberId }: { memberId: string }) {
           </ResponsiveContainer>
           <div className="mt-3 max-h-40 overflow-y-auto space-y-1">
             {[...data].reverse().map((m) => (
-              <div key={m.id} className="text-xs text-slate-600 flex justify-between border-b border-slate-100 py-1">
+              <div key={m.id} className="text-xs text-text-muted flex justify-between border-b border-border py-1">
                 <span>{new Date(m.recordedAt).toLocaleDateString()}</span>
                 <span>
                   {m.weightKg != null && `${m.weightKg}kg `}
@@ -183,7 +183,7 @@ function MeasurementsSection({ memberId }: { memberId: string }) {
               </div>
             ))}
           </div>
-          <p className="text-xs text-slate-400 mt-3">
+          <p className="text-xs text-text-faint mt-3">
             Muscle-gain and calories-burned tracking aren't implemented yet.
           </p>
         </>
@@ -215,14 +215,14 @@ function PhotosSection({ memberId }: { memberId: string }) {
   return (
     <Card className="p-5">
       <div className="flex items-center justify-between mb-3">
-        <div className="font-semibold text-slate-900">Progress Photos</div>
+        <div className="font-semibold text-text">Progress Photos</div>
         <Button variant="secondary" onClick={() => setShowForm((v) => !v)}>
           + Add
         </Button>
       </div>
 
       {showForm && (
-        <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+        <div className="mb-4 p-3 bg-bg rounded-lg">
           <Field label="Photo URL">
             <input className={inputClass} value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://..." />
           </Field>
@@ -233,7 +233,7 @@ function PhotosSection({ memberId }: { memberId: string }) {
               <option value="PROGRESS">Progress</option>
             </select>
           </Field>
-          <p className="text-xs text-slate-400 mb-3">
+          <p className="text-xs text-text-faint mb-3">
             Paste an image URL — direct file upload isn't wired up yet, this needs image storage infra.
           </p>
           {upload.isError && <p className="text-sm text-red-600 mb-3">{apiErrorMessage(upload.error)}</p>}
@@ -248,12 +248,12 @@ function PhotosSection({ memberId }: { memberId: string }) {
       ) : error || !data ? (
         <ErrorState message={apiErrorMessage(error)} />
       ) : data.length === 0 ? (
-        <p className="text-sm text-slate-400">No photos yet.</p>
+        <p className="text-sm text-text-faint">No photos yet.</p>
       ) : (
         <div className="grid grid-cols-3 gap-2">
           {data.map((p) => (
             <div key={p.id} className="relative">
-              <img src={p.photoUrl} alt={p.type} className="w-full h-24 object-cover rounded-lg border border-slate-200" />
+              <img src={p.photoUrl} alt={p.type} className="w-full h-24 object-cover rounded-lg border border-border" />
               <div className="absolute bottom-1 left-1">
                 <Badge color={p.type === 'BEFORE' ? 'slate' : p.type === 'AFTER' ? 'green' : 'amber'}>{p.type}</Badge>
               </div>

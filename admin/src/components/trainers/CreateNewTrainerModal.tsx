@@ -45,7 +45,7 @@ export default function CreateNewTrainerModal({ onClose }: { onClose: () => void
 
   return (
     <Modal title="Create New Trainer" onClose={onClose}>
-      <div className="text-sm font-semibold text-slate-700 mb-2">Personal Information</div>
+      <div className="text-sm font-semibold text-text mb-2">Personal Information</div>
       <div className="grid grid-cols-2 gap-4">
         <Field label="Full Name">
           <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
@@ -92,9 +92,9 @@ export default function CreateNewTrainerModal({ onClose }: { onClose: () => void
       <Field label="Password (login credential)">
         <input className={inputClass} type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
       </Field>
-      <p className="text-xs text-slate-400 mb-4 -mt-2">Login uses the email above — there's no separate username.</p>
+      <p className="text-xs text-text-faint mb-4 -mt-2">Login uses the email above — there's no separate username.</p>
 
-      <div className="text-sm font-semibold text-slate-700 mb-2 mt-2">Professional Information</div>
+      <div className="text-sm font-semibold text-text mb-2 mt-2">Professional Information</div>
       <ProfessionalFieldsForm state={professional} onChange={setProfessional} />
 
       {create.isError && <p className="text-sm text-red-600 mb-3">{apiErrorMessage(create.error)}</p>}

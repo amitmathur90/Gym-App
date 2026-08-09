@@ -38,7 +38,7 @@ export default function PaymentsPage() {
 
       <div className="grid md:grid-cols-2 gap-4 mb-6">
         <Card className="p-5">
-          <div className="text-sm font-semibold text-slate-700 mb-3">Revenue by month</div>
+          <div className="text-sm font-semibold text-text mb-3">Revenue by month</div>
           {revenueQuery.isLoading ? (
             <Spinner />
           ) : revenueQuery.error || !revenueQuery.data ? (
@@ -57,7 +57,7 @@ export default function PaymentsPage() {
         </Card>
 
         <Card className="p-5">
-          <div className="text-sm font-semibold text-slate-700 mb-3">Revenue by plan</div>
+          <div className="text-sm font-semibold text-text mb-3">Revenue by plan</div>
           {revenueQuery.isLoading ? (
             <Spinner />
           ) : revenueQuery.error || !revenueQuery.data ? (
@@ -86,7 +86,7 @@ export default function PaymentsPage() {
       </div>
 
       <Card>
-        <div className="px-5 py-4 border-b border-slate-200 text-sm font-semibold text-slate-700">
+        <div className="px-5 py-4 border-b border-border text-sm font-semibold text-text">
           Recent payments
         </div>
         {paymentsQuery.isLoading ? (
@@ -96,7 +96,7 @@ export default function PaymentsPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-left text-slate-500">
+              <tr className="border-b border-border text-left text-text-muted">
                 <th className="px-4 py-3 font-medium">Member</th>
                 <th className="px-4 py-3 font-medium">Plan</th>
                 <th className="px-4 py-3 font-medium">Amount</th>
@@ -107,25 +107,25 @@ export default function PaymentsPage() {
             </thead>
             <tbody>
               {paymentsQuery.data.payments.map((p) => (
-                <tr key={p.id} className="border-b border-slate-100 last:border-0">
+                <tr key={p.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3">
-                    <div className="font-medium text-slate-900">{p.user.name}</div>
-                    <div className="text-slate-500 text-xs">{p.user.email}</div>
+                    <div className="font-medium text-text">{p.user.name}</div>
+                    <div className="text-text-muted text-xs">{p.user.email}</div>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{p.membership?.plan.name ?? '—'}</td>
-                  <td className="px-4 py-3 font-medium text-slate-900">₹{Number(p.amount).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-slate-600">{p.method}</td>
+                  <td className="px-4 py-3 text-text-muted">{p.membership?.plan.name ?? '—'}</td>
+                  <td className="px-4 py-3 font-medium text-text">₹{Number(p.amount).toLocaleString()}</td>
+                  <td className="px-4 py-3 text-text-muted">{p.method}</td>
                   <td className="px-4 py-3">
                     <Badge color={p.status === 'SUCCESS' ? 'green' : p.status === 'FAILED' ? 'red' : 'slate'}>
                       {p.status}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{new Date(p.createdAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-text-muted">{new Date(p.createdAt).toLocaleDateString()}</td>
                 </tr>
               ))}
               {paymentsQuery.data.payments.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-slate-400">
+                  <td colSpan={6} className="px-4 py-10 text-center text-text-faint">
                     No payments yet.
                   </td>
                 </tr>

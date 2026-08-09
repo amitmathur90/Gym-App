@@ -22,13 +22,13 @@ function daysBetween(a: Date, b: Date) {
 
 function DuesTable({ entries, kind }: { entries: DueEntry[]; kind: 'dueSoon' | 'overdue' }) {
   if (entries.length === 0) {
-    return <p className="text-slate-400 text-sm py-6 text-center">Nothing here — all caught up.</p>
+    return <p className="text-text-faint text-sm py-6 text-center">Nothing here — all caught up.</p>
   }
 
   return (
     <table className="w-full text-sm">
       <thead>
-        <tr className="border-b border-slate-200 text-left text-slate-500">
+        <tr className="border-b border-border text-left text-text-muted">
           <th className="px-4 py-3 font-medium">Member</th>
           <th className="px-4 py-3 font-medium">Plan</th>
           <th className="px-4 py-3 font-medium">Amount due</th>
@@ -41,14 +41,14 @@ function DuesTable({ entries, kind }: { entries: DueEntry[]; kind: 'dueSoon' | '
           const end = new Date(e.endDate)
           const days = Math.abs(daysBetween(end, new Date()))
           return (
-            <tr key={e.membershipId} className="border-b border-slate-100 last:border-0">
+            <tr key={e.membershipId} className="border-b border-border last:border-0">
               <td className="px-4 py-3">
-                <div className="font-medium text-slate-900">{e.member.name}</div>
-                <div className="text-slate-500 text-xs">{e.member.email}</div>
-                {e.member.phone && <div className="text-slate-400 text-xs">{e.member.phone}</div>}
+                <div className="font-medium text-text">{e.member.name}</div>
+                <div className="text-text-muted text-xs">{e.member.email}</div>
+                {e.member.phone && <div className="text-text-faint text-xs">{e.member.phone}</div>}
               </td>
-              <td className="px-4 py-3 text-slate-600">{e.planName}</td>
-              <td className="px-4 py-3 font-medium text-slate-900">₹{Number(e.amountDue).toLocaleString()}</td>
+              <td className="px-4 py-3 text-text-muted">{e.planName}</td>
+              <td className="px-4 py-3 font-medium text-text">₹{Number(e.amountDue).toLocaleString()}</td>
               <td className="px-4 py-3">
                 <Badge color={kind === 'dueSoon' ? 'amber' : 'red'}>
                   {kind === 'dueSoon'
@@ -58,7 +58,7 @@ function DuesTable({ entries, kind }: { entries: DueEntry[]; kind: 'dueSoon' | '
                     : `${days}d ago (${end.toLocaleDateString()})`}
                 </Badge>
               </td>
-              <td className="px-4 py-3 text-slate-600">{e.autoRenew ? 'Yes' : 'No'}</td>
+              <td className="px-4 py-3 text-text-muted">{e.autoRenew ? 'Yes' : 'No'}</td>
             </tr>
           )
         })}
@@ -84,16 +84,16 @@ export default function DuesPage() {
       />
 
       <Card className="mb-6">
-        <div className="px-5 py-4 border-b border-slate-200 flex items-center gap-2">
-          <span className="text-sm font-semibold text-slate-700">Renewing in the next 7 days</span>
+        <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+          <span className="text-sm font-semibold text-text">Renewing in the next 7 days</span>
           <Badge color="amber">{data.dueSoon.length}</Badge>
         </div>
         <DuesTable entries={data.dueSoon} kind="dueSoon" />
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-slate-200 flex items-center gap-2">
-          <span className="text-sm font-semibold text-slate-700">Overdue (expired, not renewed)</span>
+        <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+          <span className="text-sm font-semibold text-text">Overdue (expired, not renewed)</span>
           <Badge color="red">{data.overdue.length}</Badge>
         </div>
         <DuesTable entries={data.overdue} kind="overdue" />

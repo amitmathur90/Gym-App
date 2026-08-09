@@ -47,7 +47,7 @@ export default function EditTrainerModal({ trainer, onClose }: { trainer: Traine
 
   return (
     <Modal title={`Edit ${trainer.user.name}`} onClose={onClose}>
-      <div className="text-sm font-semibold text-slate-700 mb-2">Personal Information</div>
+      <div className="text-sm font-semibold text-text mb-2">Personal Information</div>
       <div className="grid grid-cols-2 gap-4">
         <Field label="Full Name">
           <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
@@ -89,7 +89,7 @@ export default function EditTrainerModal({ trainer, onClose }: { trainer: Traine
         </Field>
       </div>
 
-      <div className="text-sm font-semibold text-slate-700 mb-2 mt-2">Professional Information</div>
+      <div className="text-sm font-semibold text-text mb-2 mt-2">Professional Information</div>
       <ProfessionalFieldsForm state={professional} onChange={setProfessional} />
 
       {save.isError && <p className="text-sm text-red-600 mb-3">{apiErrorMessage(save.error)}</p>}

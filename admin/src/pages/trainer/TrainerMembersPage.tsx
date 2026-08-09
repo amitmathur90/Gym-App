@@ -29,35 +29,35 @@ export default function TrainerMembersPage() {
                 </div>
               )}
               <div className="min-w-0">
-                <div className="font-semibold text-slate-900 truncate">{m.name}</div>
-                <div className="text-xs text-slate-500 truncate">{m.membershipPlan ?? 'No active membership'}</div>
+                <div className="font-semibold text-text truncate">{m.name}</div>
+                <div className="text-xs text-text-muted truncate">{m.membershipPlan ?? 'No active membership'}</div>
               </div>
             </div>
 
             <dl className="text-sm space-y-1 mb-3">
               <div className="flex justify-between">
-                <dt className="text-slate-500">Goal</dt>
-                <dd className="text-slate-900 font-medium">{m.goal ?? '—'}</dd>
+                <dt className="text-text-muted">Goal</dt>
+                <dd className="text-text font-medium">{m.goal ?? '—'}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-slate-500">Last visit</dt>
-                <dd className="text-slate-900 font-medium">
+                <dt className="text-text-muted">Last visit</dt>
+                <dd className="text-text font-medium">
                   {m.lastVisit ? new Date(m.lastVisit).toLocaleDateString() : '—'}
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-slate-500">Weekly consistency</dt>
-                <dd className="text-slate-900 font-medium">{m.weeklyConsistencyPct}%</dd>
+                <dt className="text-text-muted">Weekly consistency</dt>
+                <dd className="text-text font-medium">{m.weeklyConsistencyPct}%</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-slate-500">Next session</dt>
-                <dd className="text-slate-900 font-medium">
+                <dt className="text-text-muted">Next session</dt>
+                <dd className="text-text font-medium">
                   {m.nextSession ? new Date(m.nextSession).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : '—'}
                 </dd>
               </div>
             </dl>
 
-            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-4">
+            <div className="w-full bg-surface-hover rounded-full h-1.5 mb-4">
               <div
                 className="bg-primary h-1.5 rounded-full"
                 style={{ width: `${m.weeklyConsistencyPct}%` }}
@@ -71,20 +71,20 @@ export default function TrainerMembersPage() {
               View Profile
             </Link>
             <div className="grid grid-cols-3 gap-1 text-xs">
-              <Link to={`/trainer/workout-plans?memberId=${m.id}`} className="text-center py-1.5 rounded border border-slate-200 hover:border-primary text-slate-600 hover:text-primary">
+              <Link to={`/trainer/workout-plans?memberId=${m.id}`} className="text-center py-1.5 rounded border border-border hover:border-primary text-text-muted hover:text-primary">
                 Workout
               </Link>
-              <Link to={`/trainer/diet-plans?memberId=${m.id}`} className="text-center py-1.5 rounded border border-slate-200 hover:border-primary text-slate-600 hover:text-primary">
+              <Link to={`/trainer/diet-plans?memberId=${m.id}`} className="text-center py-1.5 rounded border border-border hover:border-primary text-text-muted hover:text-primary">
                 Diet
               </Link>
-              <Link to={`/trainer/messages/${m.id}`} className="text-center py-1.5 rounded border border-slate-200 hover:border-primary text-slate-600 hover:text-primary">
+              <Link to={`/trainer/messages/${m.id}`} className="text-center py-1.5 rounded border border-border hover:border-primary text-text-muted hover:text-primary">
                 Chat
               </Link>
             </div>
           </Card>
         ))}
         {data.length === 0 && (
-          <p className="text-slate-400 col-span-full text-center py-16">
+          <p className="text-text-faint col-span-full text-center py-16">
             No members assigned yet — the admin panel assigns members to trainers.
           </p>
         )}

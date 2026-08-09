@@ -72,12 +72,12 @@ export default function DietPlansPage() {
             <Card key={plan.id} className="p-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="font-semibold text-slate-900">{plan.name}</div>
-                  <div className="text-sm text-slate-500">
+                  <div className="font-semibold text-text">{plan.name}</div>
+                  <div className="text-sm text-text-muted">
                     {plan.member.name} ({plan.member.email})
                     {plan.trainer && ` · assigned by ${plan.trainer.user.name}`}
                   </div>
-                  {plan.notes && <p className="text-sm text-slate-600 mt-1">{plan.notes}</p>}
+                  {plan.notes && <p className="text-sm text-text-muted mt-1">{plan.notes}</p>}
                 </div>
                 <Button variant="danger" onClick={() => confirm('Delete this diet plan?') && deletePlan.mutate(plan.id)}>
                   Delete
@@ -92,19 +92,19 @@ export default function DietPlansPage() {
               </button>
 
               {expanded[plan.id] && (
-                <div className="mt-2 border border-slate-100 rounded-lg divide-y divide-slate-100">
+                <div className="mt-2 border border-border rounded-lg divide-y divide-border">
                   {DAYS.map((dayName, dayIdx) => {
                     const dayMeals = plan.meals.filter((m) => m.dayOfWeek === dayIdx)
                     if (dayMeals.length === 0) return null
                     return (
                       <div key={dayIdx} className="px-3 py-2">
-                        <div className="text-xs font-semibold text-slate-500 mb-1">{dayName}</div>
+                        <div className="text-xs font-semibold text-text-muted mb-1">{dayName}</div>
                         {dayMeals.map((m) => (
                           <div key={m.id} className="flex justify-between text-sm py-0.5">
                             <span>
                               <Badge>{m.mealType}</Badge> <span className="ml-1">{m.foodItem.name}</span>
                             </span>
-                            <span className="text-slate-500">{m.foodItem.calories} kcal</span>
+                            <span className="text-text-muted">{m.foodItem.calories} kcal</span>
                           </div>
                         ))}
                       </div>
@@ -114,7 +114,7 @@ export default function DietPlansPage() {
               )}
             </Card>
           ))}
-          {data.length === 0 && <p className="text-slate-400 text-center py-10">No diet plans assigned yet.</p>}
+          {data.length === 0 && <p className="text-text-faint text-center py-10">No diet plans assigned yet.</p>}
         </div>
       )}
 
@@ -207,29 +207,29 @@ function CreatePlanModal({ onClose }: { onClose: () => void }) {
             />
           </Field>
           {searchQuery.data && (
-            <div className="border border-slate-200 rounded-lg divide-y divide-slate-100 max-h-56 overflow-y-auto">
+            <div className="border border-border rounded-lg divide-y divide-border max-h-56 overflow-y-auto">
               {searchQuery.data.members.map((m) => (
                 <button
                   key={m.id}
                   onClick={() => setSelectedMember(m)}
-                  className="w-full text-left px-3 py-2 hover:bg-slate-50 text-sm"
+                  className="w-full text-left px-3 py-2 hover:bg-bg text-sm"
                 >
-                  <div className="font-medium text-slate-900">{m.name}</div>
-                  <div className="text-slate-500">{m.email}</div>
+                  <div className="font-medium text-text">{m.name}</div>
+                  <div className="text-text-muted">{m.email}</div>
                 </button>
               ))}
               {searchQuery.data.members.length === 0 && (
-                <div className="px-3 py-3 text-sm text-slate-400">No matches.</div>
+                <div className="px-3 py-3 text-sm text-text-faint">No matches.</div>
               )}
             </div>
           )}
         </div>
       ) : (
         <div>
-          <div className="mb-4 p-3 bg-slate-50 rounded-lg flex items-center justify-between">
+          <div className="mb-4 p-3 bg-bg rounded-lg flex items-center justify-between">
             <div>
-              <div className="font-medium text-slate-900">{selectedMember.name}</div>
-              <div className="text-sm text-slate-500">{selectedMember.email}</div>
+              <div className="font-medium text-text">{selectedMember.name}</div>
+              <div className="text-sm text-text-muted">{selectedMember.email}</div>
             </div>
             <button className="text-sm text-primary" onClick={() => setSelectedMember(null)}>
               Change
@@ -253,7 +253,7 @@ function CreatePlanModal({ onClose }: { onClose: () => void }) {
             <input className={inputClass} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </Field>
 
-          <div className="text-sm font-medium text-slate-700 mb-2">Meals</div>
+          <div className="text-sm font-medium text-text mb-2">Meals</div>
           <div className="space-y-3 mb-3">
             {rows.map((row) => (
               <div key={row.key} className="grid grid-cols-12 gap-2 items-center">

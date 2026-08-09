@@ -36,15 +36,15 @@ export default function ConvertMemberModal({ onClose }: { onClose: () => void })
         <MemberSearchPicker roleFilter="MEMBER" onSelect={setSelectedMember} />
       ) : (
         <div>
-          <div className="mb-4 p-3 bg-slate-50 rounded-lg flex items-center justify-between">
+          <div className="mb-4 p-3 bg-bg rounded-lg flex items-center justify-between">
             <div>
-              <div className="font-medium text-slate-900">{selectedMember.name}</div>
-              <div className="text-sm text-slate-500">
+              <div className="font-medium text-text">{selectedMember.name}</div>
+              <div className="text-sm text-text-muted">
                 {selectedMember.email}
                 {selectedMember.phone && ` · ${selectedMember.phone}`}
               </div>
               {selectedMember.memberships?.[0] && (
-                <div className="text-xs text-slate-400 mt-1">
+                <div className="text-xs text-text-faint mt-1">
                   Membership: {selectedMember.memberships[0].plan.name} · valid until{' '}
                   {new Date(selectedMember.memberships[0].endDate).toLocaleDateString()}
                 </div>
@@ -55,11 +55,11 @@ export default function ConvertMemberModal({ onClose }: { onClose: () => void })
             </button>
           </div>
 
-          <div className="text-sm font-semibold text-slate-700 mb-2">Trainer Details</div>
+          <div className="text-sm font-semibold text-text mb-2">Trainer Details</div>
           <ProfessionalFieldsForm state={professional} onChange={setProfessional} />
 
-          <div className="space-y-2 mb-4 border-t border-slate-100 pt-3">
-            <label className="flex items-center gap-2 text-sm text-slate-700">
+          <div className="space-y-2 mb-4 border-t border-border pt-3">
+            <label className="flex items-center gap-2 text-sm text-text">
               <input
                 type="checkbox"
                 checked={keepActiveMembership}
@@ -67,11 +67,11 @@ export default function ConvertMemberModal({ onClose }: { onClose: () => void })
               />
               Keep active membership
             </label>
-            <label className="flex items-center gap-2 text-sm text-slate-700 opacity-60">
+            <label className="flex items-center gap-2 text-sm text-text opacity-60">
               <input type="checkbox" checked disabled />
               Assign trainer role
             </label>
-            <p className="text-xs text-slate-400 pl-6">
+            <p className="text-xs text-text-faint pl-6">
               A person has exactly one role in this system, so assigning the trainer role automatically replaces
               their member role — there's nothing extra to toggle there.
             </p>

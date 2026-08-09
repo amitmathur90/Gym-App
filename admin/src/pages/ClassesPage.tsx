@@ -59,10 +59,10 @@ export default function ClassesPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-900">{c.name}</span>
+                    <span className="font-semibold text-text">{c.name}</span>
                     <Badge>{c.type}</Badge>
                   </div>
-                  <div className="text-sm text-slate-500 mt-0.5">
+                  <div className="text-sm text-text-muted mt-0.5">
                     {c.durationMin} min · capacity {c.capacity}
                     {c.trainer && ` · ${c.trainer.user.name}`}
                   </div>
@@ -85,10 +85,10 @@ export default function ClassesPage() {
                 </p>
               )}
               {c.schedules.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-slate-100 space-y-1.5">
+                <div className="mt-3 pt-3 border-t border-border space-y-1.5">
                   {c.schedules.map((s) => (
                     <div key={s.id} className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600">
+                      <span className="text-text-muted">
                         {new Date(s.startsAt).toLocaleString(undefined, {
                           weekday: 'short',
                           month: 'short',

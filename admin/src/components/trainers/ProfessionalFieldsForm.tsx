@@ -96,7 +96,7 @@ export default function ProfessionalFieldsForm({
         <Field label="Joining Date">
           <input className={inputClass} type="date" value={state.joiningDate} onChange={(e) => set('joiningDate', e.target.value)} />
         </Field>
-        <label className="flex items-center gap-2 mb-4 text-sm text-slate-700">
+        <label className="flex items-center gap-2 mb-4 text-sm text-text">
           <input type="checkbox" checked={state.isActive} onChange={(e) => set('isActive', e.target.checked)} />
           Active
         </label>

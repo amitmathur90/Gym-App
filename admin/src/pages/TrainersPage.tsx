@@ -43,7 +43,7 @@ export default function TrainersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-left text-slate-500">
+                <tr className="border-b border-border text-left text-text-muted">
                   <th className="px-4 py-3 font-medium">Photo</th>
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Mobile</th>
@@ -58,7 +58,7 @@ export default function TrainersPage() {
               </thead>
               <tbody>
                 {data.map((t) => (
-                  <tr key={t.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                  <tr key={t.id} className="border-b border-border last:border-0 hover:bg-bg">
                     <td className="px-4 py-3">
                       {t.user.avatarUrl ? (
                         <img src={t.user.avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover" />
@@ -68,22 +68,22 @@ export default function TrainersPage() {
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-medium text-slate-900">
+                    <td className="px-4 py-3 font-medium text-text">
                       <Link to={`/trainers/${t.id}`} className="hover:text-primary">
                         {t.user.name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-slate-600">{t.user.phone ?? '—'}</td>
-                    <td className="px-4 py-3 text-slate-600">{t.user.email}</td>
-                    <td className="px-4 py-3 text-slate-600">{t.specialties.join(', ') || '—'}</td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 text-text-muted">{t.user.phone ?? '—'}</td>
+                    <td className="px-4 py-3 text-text-muted">{t.user.email}</td>
+                    <td className="px-4 py-3 text-text-muted">{t.specialties.join(', ') || '—'}</td>
+                    <td className="px-4 py-3 text-text-muted">
                       {t.experienceYears != null ? `${t.experienceYears} yrs` : '—'}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">{t._count.members}</td>
+                    <td className="px-4 py-3 text-text-muted">{t._count.members}</td>
                     <td className="px-4 py-3">
                       <Badge color={t.isActive ? 'green' : 'slate'}>{t.isActive ? 'Active' : 'Inactive'}</Badge>
                     </td>
-                    <td className="px-4 py-3 text-slate-500">
+                    <td className="px-4 py-3 text-text-muted">
                       {t.joiningDate ? new Date(t.joiningDate).toLocaleDateString() : '—'}
                     </td>
                     <td className="px-4 py-3">
@@ -108,7 +108,7 @@ export default function TrainersPage() {
                 ))}
                 {data.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="px-4 py-10 text-center text-slate-400">
+                    <td colSpan={10} className="px-4 py-10 text-center text-text-faint">
                       No trainers yet.
                     </td>
                   </tr>
@@ -123,24 +123,24 @@ export default function TrainersPage() {
         <Modal title="Add Trainer" onClose={() => setShowAddChoice(false)}>
           <div className="space-y-3">
             <button
-              className="w-full text-left p-4 rounded-lg border border-slate-200 hover:border-primary hover:bg-primary/5"
+              className="w-full text-left p-4 rounded-lg border border-border hover:border-primary hover:bg-primary/5"
               onClick={() => {
                 setShowAddChoice(false)
                 setShowCreateNew(true)
               }}
             >
-              <div className="font-semibold text-slate-900">Create New Trainer</div>
-              <div className="text-sm text-slate-500">Set up a brand-new trainer account from scratch.</div>
+              <div className="font-semibold text-text">Create New Trainer</div>
+              <div className="text-sm text-text-muted">Set up a brand-new trainer account from scratch.</div>
             </button>
             <button
-              className="w-full text-left p-4 rounded-lg border border-slate-200 hover:border-primary hover:bg-primary/5"
+              className="w-full text-left p-4 rounded-lg border border-border hover:border-primary hover:bg-primary/5"
               onClick={() => {
                 setShowAddChoice(false)
                 setShowConvert(true)
               }}
             >
-              <div className="font-semibold text-slate-900">Convert Member to Trainer</div>
-              <div className="text-sm text-slate-500">
+              <div className="font-semibold text-text">Convert Member to Trainer</div>
+              <div className="text-sm text-text-muted">
                 Promote an existing member — no duplicate account, their data stays intact.
               </div>
             </button>

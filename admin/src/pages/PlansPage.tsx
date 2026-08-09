@@ -51,12 +51,12 @@ export default function PlansPage() {
           {data.map((plan) => (
             <Card key={plan.id} className="p-5 flex flex-col">
               <div className="flex items-start justify-between mb-1">
-                <div className="font-semibold text-slate-900">{plan.name}</div>
+                <div className="font-semibold text-text">{plan.name}</div>
                 <Badge color={plan.isActive ? 'green' : 'slate'}>{plan.isActive ? 'Active' : 'Archived'}</Badge>
               </div>
               <div className="text-2xl font-bold text-primary mb-1">₹{Number(plan.price).toLocaleString()}</div>
-              <div className="text-sm text-slate-500 mb-3">{plan.durationDays} days</div>
-              <ul className="text-sm text-slate-600 space-y-1 mb-4 flex-1">
+              <div className="text-sm text-text-muted mb-3">{plan.durationDays} days</div>
+              <ul className="text-sm text-text-muted space-y-1 mb-4 flex-1">
                 {plan.perks.map((p) => (
                   <li key={p}>✓ {p}</li>
                 ))}

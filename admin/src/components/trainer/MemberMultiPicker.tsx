@@ -19,15 +19,15 @@ export default function MemberMultiPicker({
   }
 
   return (
-    <div className="border border-slate-200 rounded-lg divide-y divide-slate-100 max-h-48 overflow-y-auto">
+    <div className="border border-border rounded-lg divide-y divide-border max-h-48 overflow-y-auto">
       {data?.map((m) => (
-        <label key={m.id} className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">
+        <label key={m.id} className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-bg cursor-pointer">
           <input type="checkbox" checked={selectedIds.includes(m.id)} onChange={() => toggle(m.id)} />
-          <span className="font-medium text-slate-900">{m.name}</span>
-          <span className="text-slate-400">{m.email}</span>
+          <span className="font-medium text-text">{m.name}</span>
+          <span className="text-text-faint">{m.email}</span>
         </label>
       ))}
-      {data?.length === 0 && <div className="px-3 py-3 text-sm text-slate-400">No members assigned to you yet.</div>}
+      {data?.length === 0 && <div className="px-3 py-3 text-sm text-text-faint">No members assigned to you yet.</div>}
     </div>
   )
 }

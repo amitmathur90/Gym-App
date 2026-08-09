@@ -27,8 +27,12 @@ adminRouter.use(requireAuth, requireRole("ADMIN"));
 
 adminRouter.get("/dashboard", async (_req, res) => {
   const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrow = new Date(today.getTime() + 86_400_000);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const last14Days = new Date(today.getTime() - 13 * 86_400_000);
+  const soonCutoff = new Date(now.getTime() + 7 * 86_400_000);
 
   const [
     totalMembers,
@@ -38,6 +42,14 @@ adminRouter.get("/dashboard", async (_req, res) => {
     monthlyRevenueAgg,
     totalRevenueAgg,
     upcomingClassesCount,
+    membershipStatusRaw,
+    recentSignups,
+    recentMembers,
+    recentPayments,
+    todaysScheduleRaw,
+    trainers,
+    duesExpiringSoonCount,
+    pendingPaymentsCount,
   ] = await Promise.all([
     prisma.user.count({ where: { role: "MEMBER" } }),
     prisma.membership.count({ where: { status: "ACTIVE" } }),
@@ -49,7 +61,58 @@ adminRouter.get("/dashboard", async (_req, res) => {
     }),
     prisma.payment.aggregate({ where: { status: "SUCCESS" }, _sum: { amount: true } }),
     prisma.classSchedule.count({ where: { startsAt: { gte: now } } }),
+    prisma.membership.groupBy({ by: ["status"], _count: { _all: true } }),
+    prisma.user.findMany({
+      where: { role: "MEMBER", createdAt: { gte: last14Days } },
+      select: { createdAt: true },
+    }),
+    prisma.user.findMany({
+      where: { role: "MEMBER" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        memberships: {
+          where: { status: "ACTIVE" },
+          select: { plan: { select: { name: true } } },
+          take: 1,
+          orderBy: { endDate: "desc" },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+    prisma.payment.findMany({
+      where: { status: "SUCCESS" },
+      include: { user: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+    prisma.classSchedule.findMany({
+      where: { startsAt: { gte: today, lt: tomorrow } },
+      include: { gymClass: { include: { trainer: { include: { user: { select: { name: true } } } } } } },
+      orderBy: { startsAt: "asc" },
+      take: 6,
+    }),
+    prisma.trainer.findMany({
+      select: { id: true, user: { select: { name: true } }, _count: { select: { members: true } } },
+      orderBy: { members: { _count: "desc" } },
+      take: 5,
+    }),
+    prisma.membership.count({ where: { status: "ACTIVE", endDate: { gte: now, lte: soonCutoff } } }),
+    prisma.payment.count({ where: { status: "PENDING" } }),
   ]);
+
+  const signupsByDay = new Map<string, number>();
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(last14Days.getTime() + i * 86_400_000);
+    signupsByDay.set(d.toISOString().slice(0, 10), 0);
+  }
+  for (const s of recentSignups) {
+    const key = s.createdAt.toISOString().slice(0, 10);
+    signupsByDay.set(key, (signupsByDay.get(key) ?? 0) + 1);
+  }
 
   res.json({
     totalMembers,
@@ -59,6 +122,32 @@ adminRouter.get("/dashboard", async (_req, res) => {
     monthlyRevenue: monthlyRevenueAgg._sum.amount ?? 0,
     totalRevenue: totalRevenueAgg._sum.amount ?? 0,
     upcomingClassesCount,
+    duesExpiringSoonCount,
+    pendingPaymentsCount,
+    membershipStatusBreakdown: membershipStatusRaw.map((m) => ({ status: m.status, count: m._count._all })),
+    signupsTrend: [...signupsByDay.entries()].map(([date, count]) => ({ date, count })),
+    recentMembers: recentMembers.map((m) => ({
+      id: m.id,
+      name: m.name,
+      email: m.email,
+      createdAt: m.createdAt,
+      planName: m.memberships[0]?.plan.name ?? null,
+    })),
+    recentPayments: recentPayments.map((p) => ({
+      id: p.id,
+      userName: p.user.name,
+      amount: p.amount,
+      status: p.status,
+      createdAt: p.createdAt,
+    })),
+    todaysSchedule: todaysScheduleRaw.map((s) => ({
+      id: s.id,
+      className: s.gymClass.name,
+      trainerName: s.gymClass.trainer?.user.name ?? null,
+      startsAt: s.startsAt,
+      endsAt: s.endsAt,
+    })),
+    topTrainers: trainers.map((t) => ({ id: t.id, name: t.user.name, memberCount: t._count.members })),
   });
 });
 

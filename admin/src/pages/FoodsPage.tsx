@@ -48,13 +48,13 @@ export default function FoodsPage() {
         actions={<Button onClick={() => setEditing('new')}>+ Add Food</Button>}
       />
 
-      <div className="flex gap-1 bg-slate-100 rounded-lg p-1 mb-4 w-fit">
+      <div className="flex gap-1 bg-surface-hover rounded-lg p-1 mb-4 w-fit">
         {(['ALL', ...MEAL_TYPES] as const).map((t) => (
           <button
             key={t}
             onClick={() => setFilter(t)}
             className={`px-3 py-1 text-sm rounded-md font-medium ${
-              filter === t ? 'bg-white text-primary shadow-sm' : 'text-slate-500'
+              filter === t ? 'bg-surface-raised text-primary shadow-sm' : 'text-text-muted'
             }`}
           >
             {t === 'ALL' ? 'All' : t.charAt(0) + t.slice(1).toLowerCase()}
@@ -70,7 +70,7 @@ export default function FoodsPage() {
         <Card>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-left text-slate-500">
+              <tr className="border-b border-border text-left text-text-muted">
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Meal</th>
                 <th className="px-4 py-3 font-medium">Serving</th>
@@ -81,14 +81,14 @@ export default function FoodsPage() {
             </thead>
             <tbody>
               {filtered.map((f) => (
-                <tr key={f.id} className="border-b border-slate-100 last:border-0">
-                  <td className="px-4 py-3 font-medium text-slate-900">{f.name}</td>
+                <tr key={f.id} className="border-b border-border last:border-0">
+                  <td className="px-4 py-3 font-medium text-text">{f.name}</td>
                   <td className="px-4 py-3">
                     <Badge color={MEAL_TYPE_COLORS[f.mealType]}>{f.mealType}</Badge>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{f.servingLabel}</td>
-                  <td className="px-4 py-3 text-slate-600">{f.calories} kcal</td>
-                  <td className="px-4 py-3 text-slate-600">
+                  <td className="px-4 py-3 text-text-muted">{f.servingLabel}</td>
+                  <td className="px-4 py-3 text-text-muted">{f.calories} kcal</td>
+                  <td className="px-4 py-3 text-text-muted">
                     {f.carbsG}g / {f.proteinG}g / {f.fatsG}g
                   </td>
                   <td className="px-4 py-3">
@@ -108,7 +108,7 @@ export default function FoodsPage() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-slate-400">
+                  <td colSpan={6} className="px-4 py-10 text-center text-text-faint">
                     No foods in this category yet.
                   </td>
                 </tr>

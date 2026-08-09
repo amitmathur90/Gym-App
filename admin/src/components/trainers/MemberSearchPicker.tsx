@@ -36,21 +36,21 @@ export default function MemberSearchPicker({
         />
       </Field>
       {search.length > 1 && (
-        <div className="border border-slate-200 rounded-lg divide-y divide-slate-100 max-h-56 overflow-y-auto">
+        <div className="border border-border rounded-lg divide-y divide-border max-h-56 overflow-y-auto">
           {results?.map((m) => (
             <button
               key={m.id}
               onClick={() => onSelect(m)}
-              className="w-full text-left px-3 py-2 hover:bg-slate-50 text-sm"
+              className="w-full text-left px-3 py-2 hover:bg-bg text-sm"
             >
-              <div className="font-medium text-slate-900">{m.name}</div>
-              <div className="text-slate-500">
+              <div className="font-medium text-text">{m.name}</div>
+              <div className="text-text-muted">
                 {m.email}
                 {m.phone && ` · ${m.phone}`}
               </div>
             </button>
           ))}
-          {results?.length === 0 && <div className="px-3 py-3 text-sm text-slate-400">No matches.</div>}
+          {results?.length === 0 && <div className="px-3 py-3 text-sm text-text-faint">No matches.</div>}
         </div>
       )}
     </div>

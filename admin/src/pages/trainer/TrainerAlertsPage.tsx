@@ -21,22 +21,22 @@ export default function TrainerAlertsPage() {
         <ErrorState message={apiErrorMessage(error)} />
       ) : (
         <Card>
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-border">
             {data.map((a, i) => (
               <div key={i} className="flex items-start gap-3 px-5 py-4">
                 <span className="text-xl">{ALERT_ICONS[a.type] ?? '🔔'}</span>
                 <div>
-                  <div className="text-sm text-slate-900">{a.message}</div>
-                  <div className="text-xs text-slate-400 mt-0.5">{new Date(a.createdAt).toLocaleString()}</div>
+                  <div className="text-sm text-text">{a.message}</div>
+                  <div className="text-xs text-text-faint mt-0.5">{new Date(a.createdAt).toLocaleString()}</div>
                 </div>
               </div>
             ))}
-            {data.length === 0 && <div className="px-5 py-16 text-center text-slate-400">You're all caught up.</div>}
+            {data.length === 0 && <div className="px-5 py-16 text-center text-text-faint">You're all caught up.</div>}
           </div>
         </Card>
       )}
 
-      <p className="text-xs text-slate-400 mt-4">
+      <p className="text-xs text-text-faint mt-4">
         This is a live activity feed computed from current data, not a persisted/pushed notification system —
         there's no background job scheduler or push infrastructure behind it yet.
       </p>

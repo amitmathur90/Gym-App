@@ -80,16 +80,16 @@ export default function TrainerWorkoutPlansPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-900">{g.name}</span>
+                    <span className="font-semibold text-text">{g.name}</span>
                     <Badge color={g.status === 'ACTIVE' ? 'green' : g.status === 'DRAFT' ? 'amber' : 'slate'}>
                       {g.status}
                     </Badge>
                   </div>
-                  <div className="text-sm text-slate-500 mt-1">
+                  <div className="text-sm text-text-muted mt-1">
                     Assigned to: {g.memberNames.join(', ')} · {g.days.length} day{g.days.length === 1 ? '' : 's'} ·{' '}
                     {g.days.reduce((s, d) => s + d.exerciseCount, 0)} exercises
                   </div>
-                  {g.notes && <div className="text-sm text-slate-600 mt-1">{g.notes}</div>}
+                  {g.notes && <div className="text-sm text-text-muted mt-1">{g.notes}</div>}
                 </div>
                 <div className="flex gap-2">
                   {g.status !== 'ACTIVE' && (
@@ -115,7 +115,7 @@ export default function TrainerWorkoutPlansPage() {
               </div>
             </Card>
           ))}
-          {groups.length === 0 && <p className="text-slate-400 text-center py-16">No workout plans created yet.</p>}
+          {groups.length === 0 && <p className="text-text-faint text-center py-16">No workout plans created yet.</p>}
         </div>
       )}
 
@@ -234,10 +234,10 @@ function BuilderModal({ onClose, initialMemberId }: { onClose: () => void; initi
         <textarea className={inputClass} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
 
-      <div className="text-sm font-semibold text-slate-700 mb-2 mt-4">Weekly Split</div>
+      <div className="text-sm font-semibold text-text mb-2 mt-4">Weekly Split</div>
       <div className="space-y-4">
         {days.map((day) => (
-          <div key={day.key} className="border border-slate-200 rounded-lg p-3">
+          <div key={day.key} className="border border-border rounded-lg p-3">
             <div className="grid grid-cols-2 gap-3 mb-3">
               <input
                 className={inputClass}

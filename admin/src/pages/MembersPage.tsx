@@ -86,7 +86,7 @@ export default function MembersPage() {
         <Card>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-left text-slate-500">
+              <tr className="border-b border-border text-left text-text-muted">
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Role</th>
@@ -98,23 +98,23 @@ export default function MembersPage() {
               {data.members.map((m) => (
                 <tr
                   key={m.id}
-                  className="border-b border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer"
+                  className="border-b border-border last:border-0 hover:bg-bg cursor-pointer"
                   onClick={() => setSelectedId(m.id)}
                 >
-                  <td className="px-4 py-3 font-medium text-slate-900">{m.name}</td>
-                  <td className="px-4 py-3 text-slate-600">{m.email}</td>
+                  <td className="px-4 py-3 font-medium text-text">{m.name}</td>
+                  <td className="px-4 py-3 text-text-muted">{m.email}</td>
                   <td className="px-4 py-3">
                     <Badge color={m.role === 'ADMIN' ? 'amber' : m.role === 'TRAINER' ? 'green' : 'slate'}>
                       {m.role}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{m.memberships[0]?.plan.name ?? '—'}</td>
-                  <td className="px-4 py-3 text-slate-500">{new Date(m.createdAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-text-muted">{m.memberships[0]?.plan.name ?? '—'}</td>
+                  <td className="px-4 py-3 text-text-muted">{new Date(m.createdAt).toLocaleDateString()}</td>
                 </tr>
               ))}
               {data.members.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-slate-400">
+                  <td colSpan={5} className="px-4 py-10 text-center text-text-faint">
                     No members found.
                   </td>
                 </tr>
@@ -131,13 +131,13 @@ export default function MembersPage() {
           ) : (
             <div>
               <div className="mb-4">
-                <div className="font-semibold text-slate-900">{detailQuery.data.name}</div>
-                <div className="text-sm text-slate-500">{detailQuery.data.email}</div>
-                {detailQuery.data.phone && <div className="text-sm text-slate-500">{detailQuery.data.phone}</div>}
+                <div className="font-semibold text-text">{detailQuery.data.name}</div>
+                <div className="text-sm text-text-muted">{detailQuery.data.email}</div>
+                {detailQuery.data.phone && <div className="text-sm text-text-muted">{detailQuery.data.phone}</div>}
               </div>
 
               <label className="block mb-5">
-                <span className="block text-sm font-medium text-slate-700 mb-1">Role</span>
+                <span className="block text-sm font-medium text-text mb-1">Role</span>
                 <select
                   className={inputClass}
                   value={detailQuery.data.role}
@@ -151,7 +151,7 @@ export default function MembersPage() {
               </label>
 
               <label className="block mb-5">
-                <span className="block text-sm font-medium text-slate-700 mb-1">Assigned trainer</span>
+                <span className="block text-sm font-medium text-text mb-1">Assigned trainer</span>
                 <select
                   className={inputClass}
                   value={detailQuery.data.assignedTrainerId ?? ''}
@@ -168,12 +168,12 @@ export default function MembersPage() {
               </label>
 
               <div className="mb-4">
-                <div className="text-sm font-semibold text-slate-700 mb-2">Memberships</div>
+                <div className="text-sm font-semibold text-text mb-2">Memberships</div>
                 {detailQuery.data.memberships.length === 0 && (
-                  <div className="text-sm text-slate-400">No memberships yet.</div>
+                  <div className="text-sm text-text-faint">No memberships yet.</div>
                 )}
                 {detailQuery.data.memberships.map((m) => (
-                  <div key={m.id} className="flex justify-between text-sm py-1.5 border-b border-slate-100 last:border-0">
+                  <div key={m.id} className="flex justify-between text-sm py-1.5 border-b border-border last:border-0">
                     <span>{m.plan.name}</span>
                     <Badge color={m.status === 'ACTIVE' ? 'green' : 'slate'}>{m.status}</Badge>
                   </div>
@@ -181,12 +181,12 @@ export default function MembersPage() {
               </div>
 
               <div>
-                <div className="text-sm font-semibold text-slate-700 mb-2">Recent payments</div>
+                <div className="text-sm font-semibold text-text mb-2">Recent payments</div>
                 {detailQuery.data.payments.length === 0 && (
-                  <div className="text-sm text-slate-400">No payments yet.</div>
+                  <div className="text-sm text-text-faint">No payments yet.</div>
                 )}
                 {detailQuery.data.payments.map((p) => (
-                  <div key={p.id} className="flex justify-between text-sm py-1.5 border-b border-slate-100 last:border-0">
+                  <div key={p.id} className="flex justify-between text-sm py-1.5 border-b border-border last:border-0">
                     <span>
                       ₹{Number(p.amount).toLocaleString()} · {p.method}
                     </span>
