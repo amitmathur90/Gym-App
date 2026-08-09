@@ -8,6 +8,18 @@ datasource db {
 }
 
 // ------------------------------------------------------------------
+// App-wide settings (key/value; small assets like the login background
+// are stored as base64 data URLs here rather than on disk, since
+// Render's free-tier filesystem is wiped on every deploy)
+// ------------------------------------------------------------------
+
+model Setting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+// ------------------------------------------------------------------
 // Auth / Users
 // ------------------------------------------------------------------
 

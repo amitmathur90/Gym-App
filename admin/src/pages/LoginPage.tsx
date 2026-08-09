@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Navigate } from 'react-router-dom'
+import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { inputClass } from '../components/ui'
 
@@ -26,6 +28,11 @@ const TABS = [
 
 export default function LoginPage() {
   const { login, status, user } = useAuth()
+  const { data: branding } = useQuery<{ loginBackground: string | null }>({
+    queryKey: ['public-branding'],
+    queryFn: () => api.get('/public/branding').then((r) => r.data),
+    staleTime: 5 * 60 * 1000,
+  })
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('ADMIN')
   const [email, setEmail] = useState(TABS[0].defaultEmail)
   const [password, setPassword] = useState('')
@@ -57,25 +64,42 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-bg">
-      {/* Hero panel — swap the background style below for a real photo:
-          style={{ backgroundImage: "url('/login-hero.jpg')" }} and drop
-          the file in admin/public/. */}
+      {/* Hero panel — shows the uploaded background (Settings → Branding)
+          if one exists, else a generated gradient + pattern fallback. */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(circle at 20% 20%, rgba(238,42,92,0.35), transparent 45%), radial-gradient(circle at 80% 70%, rgba(139,92,246,0.3), transparent 50%), linear-gradient(160deg, #0a0d14 0%, #12151f 55%, #1a0d16 100%)',
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M10 60h20M90 60h20M30 60h60M25 45v30M35 50v20M85 45v30M95 50v20'/%3E%3C/g%3E%3C/svg%3E\")",
-            backgroundSize: '120px 120px',
-          }}
-        />
+        {branding?.loginBackground ? (
+          <>
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${branding.loginBackground})` }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(180deg, rgba(10,13,20,0.35) 0%, rgba(10,13,20,0.55) 60%, rgba(10,13,20,0.9) 100%)',
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'radial-gradient(circle at 20% 20%, rgba(238,42,92,0.35), transparent 45%), radial-gradient(circle at 80% 70%, rgba(139,92,246,0.3), transparent 50%), linear-gradient(160deg, #0a0d14 0%, #12151f 55%, #1a0d16 100%)',
+              }}
+            />
+            <div
+              className="absolute inset-0 opacity-[0.07]"
+              style={{
+                backgroundImage:
+                  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M10 60h20M90 60h20M30 60h60M25 45v30M35 50v20M85 45v30M95 50v20'/%3E%3C/g%3E%3C/svg%3E\")",
+                backgroundSize: '120px 120px',
+              }}
+            />
+          </>
+        )}
         <div className="relative z-10 flex flex-col justify-end p-12 text-white">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-purple flex items-center justify-center text-2xl mb-6">
             🏋️‍♂️

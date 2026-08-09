@@ -14,6 +14,7 @@ import FoodsPage from './pages/FoodsPage'
 import ClassesPage from './pages/ClassesPage'
 import PaymentsPage from './pages/PaymentsPage'
 import DuesPage from './pages/DuesPage'
+import SettingsPage from './pages/SettingsPage'
 import TrainerDashboardPage from './pages/trainer/TrainerDashboardPage'
 import TrainerMembersPage from './pages/trainer/TrainerMembersPage'
 import TrainerMemberProfilePage from './pages/trainer/TrainerMemberProfilePage'
@@ -63,6 +64,7 @@ export default function App() {
         <Route path="/classes" element={<RoleGate role="ADMIN"><ClassesPage /></RoleGate>} />
         <Route path="/payments" element={<RoleGate role="ADMIN"><PaymentsPage /></RoleGate>} />
         <Route path="/dues" element={<RoleGate role="ADMIN"><DuesPage /></RoleGate>} />
+        <Route path="/settings" element={<RoleGate role="ADMIN"><SettingsPage /></RoleGate>} />
 
         <Route path="/trainer" element={<RoleGate role="TRAINER"><TrainerDashboardPage /></RoleGate>} />
         <Route path="/trainer/members" element={<RoleGate role="TRAINER"><TrainerMembersPage /></RoleGate>} />

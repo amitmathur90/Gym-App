@@ -33,6 +33,10 @@ const ADMIN_SECTIONS: { heading: string; items: NavItem[] }[] = [
       { to: '/dues', label: 'Dues & Renewals', icon: '⏰' },
     ],
   },
+  {
+    heading: 'Settings',
+    items: [{ to: '/settings', label: 'Branding', icon: '🎨' }],
+  },
 ]
 
 const TRAINER_SECTIONS: { heading: string; items: NavItem[] }[] = [

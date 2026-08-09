@@ -16,6 +16,7 @@ import { nutritionRouter } from "@/modules/nutrition/nutrition.routes";
 import { adminRouter } from "@/modules/admin/admin.routes";
 import { adminTrainersRouter } from "@/modules/admin/admin.trainers.routes";
 import { trainerRouter } from "@/modules/trainer/trainer.routes";
+import { publicRouter } from "@/modules/public/public.routes";
 
 export const app = express();
 
@@ -26,6 +27,7 @@ app.use(morgan("dev"));
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
+app.use("/api/public", publicRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/membership", membershipRouter);

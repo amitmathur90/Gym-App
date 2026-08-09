@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 import { z } from "zod";
 import { prisma } from "@/config/prisma";
 import { requireAuth, requireRole } from "@/middleware/auth";
@@ -490,4 +491,37 @@ adminRouter.get("/reports/dues", async (_req, res) => {
   res.json({ dueSoon: dueSoon.map(shape), overdue: overdue.map(shape) });
 });
 
+// ------------------------------------------------------------------
+// Branding settings
+// ------------------------------------------------------------------
+
+// Stored as a base64 data URL in the DB (not on disk) since Render's
+// free-tier filesystem is wiped on every deploy.
+const LOGIN_BACKGROUND_KEY = "login_background";
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 4 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) return cb(new Error("Only image files are allowed"));
+    cb(null, true);
+  },
+});
+
+adminRouter.post("/settings/login-background", upload.single("image"), async (req, res) => {
+  if (!req.file) throw ApiError.badRequest("No image uploaded");
+  const dataUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+  await prisma.setting.upsert({
+    where: { key: LOGIN_BACKGROUND_KEY },
+    create: { key: LOGIN_BACKGROUND_KEY, value: dataUrl },
+    update: { value: dataUrl },
+  });
+  res.json({ loginBackground: dataUrl });
+});
+
+adminRouter.delete("/settings/login-background", async (_req, res) => {
+  await prisma.setting.deleteMany({ where: { key: LOGIN_BACKGROUND_KEY } });
+  res.status(204).send();
+});
+
 export default adminRouter;
+export { LOGIN_BACKGROUND_KEY };
