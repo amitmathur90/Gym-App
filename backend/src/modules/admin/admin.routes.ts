@@ -1,12 +1,15 @@
 import { Router } from "express";
 import multer from "multer";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/config/prisma";
 import { requireAuth, requireRole } from "@/middleware/auth";
 import { validateBody, validateQuery } from "@/middleware/validate";
 import { ApiError } from "@/utils/ApiError";
 import {
   paginationSchema,
+  memberFilterSchema,
+  bulkDeleteSchema,
   updateMemberSchema,
   createPlanSchema,
   updatePlanSchema,
@@ -156,18 +159,25 @@ adminRouter.get("/dashboard", async (_req, res) => {
 // Member management
 // ------------------------------------------------------------------
 
-adminRouter.get("/members", validateQuery(paginationSchema), async (req, res) => {
-  const { page, pageSize, search } = req.query as unknown as z.infer<typeof paginationSchema>;
+adminRouter.get("/members", validateQuery(memberFilterSchema), async (req, res) => {
+  const { page, pageSize, search, role, membershipStatus } = req.query as unknown as z.infer<
+    typeof memberFilterSchema
+  >;
 
-  const where = search
-    ? {
-        OR: [
-          { name: { contains: search, mode: "insensitive" as const } },
-          { email: { contains: search, mode: "insensitive" as const } },
-          { phone: { contains: search, mode: "insensitive" as const } },
-        ],
-      }
-    : undefined;
+  const where: Prisma.UserWhereInput = {};
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" as const } },
+      { email: { contains: search, mode: "insensitive" as const } },
+      { phone: { contains: search, mode: "insensitive" as const } },
+    ];
+  }
+  if (role) where.role = role;
+  if (membershipStatus === "NONE") {
+    where.memberships = { none: {} };
+  } else if (membershipStatus) {
+    where.memberships = { some: { status: membershipStatus } };
+  }
 
   const [members, total] = await Promise.all([
     prisma.user.findMany({
@@ -197,6 +207,124 @@ adminRouter.get("/members", validateQuery(paginationSchema), async (req, res) =>
   res.json({ members, total, page, pageSize });
 });
 
+adminRouter.post("/members/bulk-delete", validateBody(bulkDeleteSchema), async (req, res) => {
+  const { ids } = req.body as z.infer<typeof bulkDeleteSchema>;
+  const result = await prisma.user.deleteMany({ where: { id: { in: ids } } });
+  res.json({ deleted: result.count });
+});
+
+adminRouter.get("/members/:id/water", async (req, res) => {
+  const memberId = req.params.id;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const start = new Date(today.getTime() - 6 * 86_400_000);
+
+  const goals = await prisma.dailyGoal.findMany({
+    where: { userId: memberId, date: { gte: start, lte: today } },
+    select: { date: true, waterLoggedMl: true, targetWaterMl: true },
+  });
+  const byDate = new Map(goals.map((g) => [g.date.toISOString().slice(0, 10), g.waterLoggedMl]));
+  const todayKey = today.toISOString().slice(0, 10);
+  const todayGoal = goals.find((g) => g.date.toISOString().slice(0, 10) === todayKey);
+
+  const weekly = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start.getTime() + i * 86_400_000);
+    const key = d.toISOString().slice(0, 10);
+    weekly.push({ date: key, waterLoggedMl: byDate.get(key) ?? 0 });
+  }
+
+  res.json({
+    todayWaterMl: todayGoal?.waterLoggedMl ?? 0,
+    targetWaterMl: todayGoal?.targetWaterMl ?? 2500,
+    weekly,
+  });
+});
+
+adminRouter.get("/members/:id/diet-plans", async (req, res) => {
+  const plans = await prisma.dietPlan.findMany({
+    where: { memberId: req.params.id },
+    include: {
+      trainer: { include: { user: { select: { name: true } } } },
+      meals: { include: { foodItem: true }, orderBy: [{ dayOfWeek: "asc" }, { mealType: "asc" }] },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  res.json(
+    plans.map((p) => ({
+      id: p.id,
+      name: p.name,
+      notes: p.notes,
+      targetWaterMl: p.targetWaterMl,
+      supplements: p.supplements,
+      createdAt: p.createdAt,
+      trainerName: p.trainer?.user.name ?? null,
+      meals: p.meals.map((m) => ({
+        id: m.id,
+        dayOfWeek: m.dayOfWeek,
+        mealType: m.mealType,
+        foodName: m.foodItem.name,
+        calories: m.foodItem.calories,
+      })),
+    }))
+  );
+});
+
+adminRouter.get("/members/:id/trainer-report", async (req, res) => {
+  const memberId = req.params.id;
+
+  const [member, assignments, bookings] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: memberId },
+      select: {
+        assignedTrainer: {
+          select: {
+            id: true,
+            bio: true,
+            specialties: true,
+            user: { select: { name: true, email: true, phone: true } },
+          },
+        },
+      },
+    }),
+    prisma.trainerAssignment.findMany({
+      where: { memberId },
+      include: { trainer: { include: { user: { select: { name: true } } } } },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.personalTrainerBooking.findMany({
+      where: { userId: memberId },
+      include: { trainer: { include: { user: { select: { name: true } } } } },
+      orderBy: { startTime: "desc" },
+      take: 20,
+    }),
+  ]);
+  if (!member) throw ApiError.notFound("Member not found");
+
+  res.json({
+    assignedTrainer: member.assignedTrainer,
+    assignments: assignments.map((a) => ({
+      id: a.id,
+      trainerName: a.trainer.user.name,
+      trainingType: a.trainingType,
+      startDate: a.startDate,
+      endDate: a.endDate,
+      schedule: a.schedule,
+      notes: a.notes,
+      status: a.status,
+    })),
+    sessions: bookings.map((b) => ({
+      id: b.id,
+      trainerName: b.trainer.user.name,
+      startTime: b.startTime,
+      endTime: b.endTime,
+      status: b.status,
+      sessionType: b.sessionType,
+      notes: b.notes,
+    })),
+  });
+});
+
 adminRouter.get("/members/:id", async (req, res) => {
   const member = await prisma.user.findUnique({
     where: { id: req.params.id },
@@ -218,6 +346,11 @@ adminRouter.patch("/members/:id", validateBody(updateMemberSchema), async (req, 
   });
   const { passwordHash, ...safe } = member;
   res.json(safe);
+});
+
+adminRouter.delete("/members/:id", async (req, res) => {
+  await prisma.user.delete({ where: { id: req.params.id } });
+  res.status(204).send();
 });
 
 // ------------------------------------------------------------------

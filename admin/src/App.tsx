@@ -6,6 +6,7 @@ import { Spinner } from './components/ui'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import MembersPage from './pages/MembersPage'
+import MemberProfilePage from './pages/MemberProfilePage'
 import TrainersPage from './pages/TrainersPage'
 import TrainerProfilePage from './pages/TrainerProfilePage'
 import PlansPage from './pages/PlansPage'
@@ -56,6 +57,7 @@ export default function App() {
       <Route element={<ProtectedLayout />}>
         <Route path="/" element={<RoleHome />} />
         <Route path="/members" element={<RoleGate role="ADMIN"><MembersPage /></RoleGate>} />
+        <Route path="/members/:id" element={<RoleGate role="ADMIN"><MemberProfilePage /></RoleGate>} />
         <Route path="/trainers" element={<RoleGate role="ADMIN"><TrainersPage /></RoleGate>} />
         <Route path="/trainers/:id" element={<RoleGate role="ADMIN"><TrainerProfilePage /></RoleGate>} />
         <Route path="/plans" element={<RoleGate role="ADMIN"><PlansPage /></RoleGate>} />

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { api, apiErrorMessage } from '../lib/api'
-import { Badge, Card, ErrorState, Modal, PageHeader, Spinner, inputClass } from '../components/ui'
+import { Badge, Button, Card, ErrorState, PageHeader, Spinner, inputClass } from '../components/ui'
 
 interface Member {
   id: string
@@ -14,54 +15,60 @@ interface Member {
   memberships: { plan: { name: string }; endDate: string }[]
 }
 
-interface MemberDetail extends Member {
-  memberships: { id: string; plan: { name: string }; status: string; startDate: string; endDate: string }[]
-  payments: { id: string; amount: string; status: string; method: string; createdAt: string }[]
-  assignedTrainerId: string | null
-  assignedTrainer: { id: string; user: { name: string; email: string } } | null
-}
-
-interface TrainerOption {
-  id: string
-  user: { name: string }
-}
+const ROLE_OPTIONS = ['MEMBER', 'TRAINER', 'ADMIN'] as const
+const MEMBERSHIP_STATUS_OPTIONS = ['ACTIVE', 'EXPIRED', 'CANCELLED', 'PENDING', 'NONE'] as const
 
 export default function MembersPage() {
   const [search, setSearch] = useState('')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [role, setRole] = useState('')
+  const [membershipStatus, setMembershipStatus] = useState('')
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const queryClient = useQueryClient()
 
   const { data, isLoading, error } = useQuery<{ members: Member[]; total: number }>({
-    queryKey: ['admin-members', search],
-    queryFn: () => api.get('/admin/members', { params: { search: search || undefined, pageSize: 50 } }).then((r) => r.data),
+    queryKey: ['admin-members', search, role, membershipStatus],
+    queryFn: () =>
+      api
+        .get('/admin/members', {
+          params: {
+            search: search || undefined,
+            role: role || undefined,
+            membershipStatus: membershipStatus || undefined,
+            pageSize: 50,
+          },
+        })
+        .then((r) => r.data),
   })
 
-  const detailQuery = useQuery<MemberDetail>({
-    queryKey: ['admin-member', selectedId],
-    queryFn: () => api.get(`/admin/members/${selectedId}`).then((r) => r.data),
-    enabled: !!selectedId,
-  })
-
-  const trainersQuery = useQuery<TrainerOption[]>({
-    queryKey: ['admin-trainers'],
-    queryFn: () => api.get('/admin/trainers').then((r) => r.data),
-  })
-
-  const updateRole = useMutation({
-    mutationFn: (role: string) => api.patch(`/admin/members/${selectedId}`, { role }),
+  const bulkDelete = useMutation({
+    mutationFn: (ids: string[]) => api.post('/admin/members/bulk-delete', { ids }),
     onSuccess: () => {
+      setSelected(new Set())
+      setConfirmingDelete(false)
       queryClient.invalidateQueries({ queryKey: ['admin-members'] })
-      queryClient.invalidateQueries({ queryKey: ['admin-member', selectedId] })
     },
   })
 
-  const updateTrainer = useMutation({
-    mutationFn: (assignedTrainerId: string | null) => api.patch(`/admin/members/${selectedId}`, { assignedTrainerId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-member', selectedId] })
-      queryClient.invalidateQueries({ queryKey: ['admin-trainers'] })
-    },
-  })
+  const members = data?.members ?? []
+  const allSelected = members.length > 0 && members.every((m) => selected.has(m.id))
+
+  function toggleAll() {
+    if (allSelected) {
+      setSelected(new Set())
+    } else {
+      setSelected(new Set(members.map((m) => m.id)))
+    }
+  }
+
+  function toggleOne(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   return (
     <div>
@@ -69,14 +76,64 @@ export default function MembersPage() {
         title="Members"
         subtitle={data ? `${data.total} total` : undefined}
         actions={
-          <input
-            className={`${inputClass} w-64`}
-            placeholder="Search by name or email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <div className="flex items-center gap-2 flex-wrap">
+            <input
+              className={`${inputClass} w-56`}
+              placeholder="Search by name or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <select className={`${inputClass} w-auto`} value={role} onChange={(e) => setRole(e.target.value)}>
+              <option value="">All roles</option>
+              {ROLE_OPTIONS.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+            <select
+              className={`${inputClass} w-auto`}
+              value={membershipStatus}
+              onChange={(e) => setMembershipStatus(e.target.value)}
+            >
+              <option value="">Any membership status</option>
+              {MEMBERSHIP_STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s === 'NONE' ? 'No membership' : s}
+                </option>
+              ))}
+            </select>
+          </div>
         }
       />
+
+      {selected.size > 0 && (
+        <div className="flex items-center justify-between bg-primary/10 border border-primary/30 rounded-xl px-4 py-3 mb-4">
+          <span className="text-sm text-text font-medium">{selected.size} selected</span>
+          <div className="flex items-center gap-2">
+            {confirmingDelete ? (
+              <>
+                <span className="text-sm text-text-muted">Delete permanently?</span>
+                <Button variant="secondary" onClick={() => setConfirmingDelete(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="danger"
+                  disabled={bulkDelete.isPending}
+                  onClick={() => bulkDelete.mutate([...selected])}
+                >
+                  {bulkDelete.isPending ? 'Deleting…' : 'Confirm Delete'}
+                </Button>
+              </>
+            ) : (
+              <Button variant="danger" onClick={() => setConfirmingDelete(true)}>
+                Delete Selected
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+      {bulkDelete.isError && <p className="text-sm text-red mb-4">{apiErrorMessage(bulkDelete.error)}</p>}
 
       {isLoading ? (
         <Spinner />
@@ -87,6 +144,9 @@ export default function MembersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-text-muted">
+                <th className="px-4 py-3 font-medium w-10">
+                  <input type="checkbox" checked={allSelected} onChange={toggleAll} className="accent-primary" />
+                </th>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Role</th>
@@ -95,13 +155,21 @@ export default function MembersPage() {
               </tr>
             </thead>
             <tbody>
-              {data.members.map((m) => (
-                <tr
-                  key={m.id}
-                  className="border-b border-border last:border-0 hover:bg-bg cursor-pointer"
-                  onClick={() => setSelectedId(m.id)}
-                >
-                  <td className="px-4 py-3 font-medium text-text">{m.name}</td>
+              {members.map((m) => (
+                <tr key={m.id} className="border-b border-border last:border-0 hover:bg-bg">
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selected.has(m.id)}
+                      onChange={() => toggleOne(m.id)}
+                      className="accent-primary"
+                    />
+                  </td>
+                  <td className="px-4 py-3 font-medium">
+                    <Link to={`/members/${m.id}`} className="text-text hover:text-primary">
+                      {m.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-text-muted">{m.email}</td>
                   <td className="px-4 py-3">
                     <Badge color={m.role === 'ADMIN' ? 'amber' : m.role === 'TRAINER' ? 'green' : 'slate'}>
@@ -112,9 +180,9 @@ export default function MembersPage() {
                   <td className="px-4 py-3 text-text-muted">{new Date(m.createdAt).toLocaleDateString()}</td>
                 </tr>
               ))}
-              {data.members.length === 0 && (
+              {members.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-text-faint">
+                  <td colSpan={6} className="px-4 py-10 text-center text-text-faint">
                     No members found.
                   </td>
                 </tr>
@@ -122,83 +190,6 @@ export default function MembersPage() {
             </tbody>
           </table>
         </Card>
-      )}
-
-      {selectedId && (
-        <Modal title="Member details" onClose={() => setSelectedId(null)}>
-          {detailQuery.isLoading || !detailQuery.data ? (
-            <Spinner />
-          ) : (
-            <div>
-              <div className="mb-4">
-                <div className="font-semibold text-text">{detailQuery.data.name}</div>
-                <div className="text-sm text-text-muted">{detailQuery.data.email}</div>
-                {detailQuery.data.phone && <div className="text-sm text-text-muted">{detailQuery.data.phone}</div>}
-              </div>
-
-              <label className="block mb-5">
-                <span className="block text-sm font-medium text-text mb-1">Role</span>
-                <select
-                  className={inputClass}
-                  value={detailQuery.data.role}
-                  onChange={(e) => updateRole.mutate(e.target.value)}
-                  disabled={updateRole.isPending}
-                >
-                  <option value="MEMBER">MEMBER</option>
-                  <option value="TRAINER">TRAINER</option>
-                  <option value="ADMIN">ADMIN</option>
-                </select>
-              </label>
-
-              <label className="block mb-5">
-                <span className="block text-sm font-medium text-text mb-1">Assigned trainer</span>
-                <select
-                  className={inputClass}
-                  value={detailQuery.data.assignedTrainerId ?? ''}
-                  onChange={(e) => updateTrainer.mutate(e.target.value || null)}
-                  disabled={updateTrainer.isPending}
-                >
-                  <option value="">— None —</option>
-                  {trainersQuery.data?.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.user.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="mb-4">
-                <div className="text-sm font-semibold text-text mb-2">Memberships</div>
-                {detailQuery.data.memberships.length === 0 && (
-                  <div className="text-sm text-text-faint">No memberships yet.</div>
-                )}
-                {detailQuery.data.memberships.map((m) => (
-                  <div key={m.id} className="flex justify-between text-sm py-1.5 border-b border-border last:border-0">
-                    <span>{m.plan.name}</span>
-                    <Badge color={m.status === 'ACTIVE' ? 'green' : 'slate'}>{m.status}</Badge>
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <div className="text-sm font-semibold text-text mb-2">Recent payments</div>
-                {detailQuery.data.payments.length === 0 && (
-                  <div className="text-sm text-text-faint">No payments yet.</div>
-                )}
-                {detailQuery.data.payments.map((p) => (
-                  <div key={p.id} className="flex justify-between text-sm py-1.5 border-b border-border last:border-0">
-                    <span>
-                      ₹{Number(p.amount).toLocaleString()} · {p.method}
-                    </span>
-                    <Badge color={p.status === 'SUCCESS' ? 'green' : p.status === 'FAILED' ? 'red' : 'slate'}>
-                      {p.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </Modal>
       )}
     </div>
   )

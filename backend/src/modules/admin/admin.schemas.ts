@@ -6,6 +6,15 @@ export const paginationSchema = z.object({
   search: z.string().optional(),
 });
 
+export const memberFilterSchema = paginationSchema.extend({
+  role: z.enum(["MEMBER", "TRAINER", "ADMIN"]).optional(),
+  membershipStatus: z.enum(["ACTIVE", "EXPIRED", "CANCELLED", "PENDING", "NONE"]).optional(),
+});
+
+export const bulkDeleteSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1).max(200),
+});
+
 export const updateMemberSchema = z.object({
   role: z.enum(["MEMBER", "TRAINER", "ADMIN"]).optional(),
   name: z.string().min(2).max(80).optional(),
