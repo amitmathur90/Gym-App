@@ -5,12 +5,16 @@ import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { inputClass } from '../components/ui'
 
+const DEFAULT_TITLE = 'Gym Fit'
+const DEFAULT_DESCRIPTION =
+  'Members, trainers, classes, payments and progress — everything your team needs, in one place.'
+
 const TABS = [
   {
     key: 'ADMIN' as const,
     label: 'Admin',
     icon: '🏋️‍♂️',
-    title: 'Gym Fit Admin',
+    roleLabel: 'Admin',
     subtitle: 'Sign in with an admin account',
     defaultEmail: 'admin@gymapp.com',
     hint: 'Seeded admin: admin@gymapp.com / Admin123!',
@@ -19,20 +23,29 @@ const TABS = [
     key: 'TRAINER' as const,
     label: 'Trainer',
     icon: '🏋️',
-    title: 'Gym Fit Trainer',
+    roleLabel: 'Trainer',
     subtitle: 'Sign in with your trainer account',
     defaultEmail: '',
     hint: '',
   },
 ]
 
+interface Branding {
+  loginBackground: string | null
+  logo: string | null
+  siteTitle: string | null
+  siteDescription: string | null
+}
+
 export default function LoginPage() {
   const { login, status, user } = useAuth()
-  const { data: branding } = useQuery<{ loginBackground: string | null }>({
+  const { data: branding } = useQuery<Branding>({
     queryKey: ['public-branding'],
     queryFn: () => api.get('/public/branding').then((r) => r.data),
     staleTime: 5 * 60 * 1000,
   })
+  const siteTitle = branding?.siteTitle || DEFAULT_TITLE
+  const siteDescription = branding?.siteDescription || DEFAULT_DESCRIPTION
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('ADMIN')
   const [email, setEmail] = useState(TABS[0].defaultEmail)
   const [password, setPassword] = useState('')
@@ -101,25 +114,31 @@ export default function LoginPage() {
           </>
         )}
         <div className="relative z-10 flex flex-col justify-end p-12 text-white">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-purple flex items-center justify-center text-2xl mb-6">
-            🏋️‍♂️
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-purple flex items-center justify-center text-2xl mb-6 overflow-hidden">
+            {branding?.logo ? (
+              <img src={branding.logo} alt={siteTitle} className="w-full h-full object-cover" />
+            ) : (
+              '🏋️‍♂️'
+            )}
           </div>
-          <h2 className="text-4xl font-bold leading-tight mb-4 max-w-md">
-            Run your gym like a pro, from one dashboard.
-          </h2>
-          <p className="text-white/60 max-w-sm">
-            Members, trainers, classes, payments and progress — everything your team needs, in one place.
-          </p>
+          <h2 className="text-4xl font-bold leading-tight mb-4 max-w-md">{siteTitle}</h2>
+          <p className="text-white/60 max-w-sm">{siteDescription}</p>
         </div>
       </div>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-sm bg-surface-raised rounded-2xl border border-border shadow-xl p-8">
           <div className="text-center mb-6">
-            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-primary to-purple flex items-center justify-center text-2xl lg:hidden">
-              {active.icon}
+            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-primary to-purple flex items-center justify-center text-2xl lg:hidden overflow-hidden">
+              {branding?.logo ? (
+                <img src={branding.logo} alt={siteTitle} className="w-full h-full object-cover" />
+              ) : (
+                active.icon
+              )}
             </div>
-            <h1 className="text-xl font-bold text-text">{active.title}</h1>
+            <h1 className="text-xl font-bold text-text">
+              {siteTitle} {active.roleLabel}
+            </h1>
             <p className="text-sm text-text-muted mt-1">{active.subtitle}</p>
           </div>
 

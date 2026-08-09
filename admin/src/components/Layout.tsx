@@ -1,5 +1,9 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
+
+const DEFAULT_TITLE = 'Gym Fit'
 
 interface NavItem {
   to: string
@@ -68,16 +72,26 @@ export default function Layout() {
   const { user, logout } = useAuth()
   const isTrainer = user?.role === 'TRAINER'
   const sections = isTrainer ? TRAINER_SECTIONS : ADMIN_SECTIONS
+  const { data: branding } = useQuery<{ logo: string | null; siteTitle: string | null }>({
+    queryKey: ['public-branding'],
+    queryFn: () => api.get('/public/branding').then((r) => r.data),
+    staleTime: 5 * 60 * 1000,
+  })
+  const siteTitle = branding?.siteTitle || DEFAULT_TITLE
 
   return (
     <div className="flex min-h-screen bg-bg">
       <aside className="w-64 shrink-0 bg-surface border-r border-border flex flex-col">
         <div className="h-16 flex items-center gap-2.5 px-5 border-b border-border">
-          <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-purple flex items-center justify-center text-lg shrink-0">
-            🏋️‍♂️
+          <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-purple flex items-center justify-center text-lg shrink-0 overflow-hidden">
+            {branding?.logo ? (
+              <img src={branding.logo} alt={siteTitle} className="w-full h-full object-cover" />
+            ) : (
+              '🏋️‍♂️'
+            )}
           </span>
           <div className="min-w-0">
-            <div className="font-bold text-text leading-none truncate">Gym Fit</div>
+            <div className="font-bold text-text leading-none truncate">{siteTitle}</div>
             <div className="text-xs text-text-muted mt-0.5">{isTrainer ? 'Trainer Panel' : 'Admin Panel'}</div>
           </div>
         </div>

@@ -495,9 +495,13 @@ adminRouter.get("/reports/dues", async (_req, res) => {
 // Branding settings
 // ------------------------------------------------------------------
 
-// Stored as a base64 data URL in the DB (not on disk) since Render's
-// free-tier filesystem is wiped on every deploy.
+// Stored as base64 data URLs / plain text in the DB (not on disk) since
+// Render's free-tier filesystem is wiped on every deploy.
 const LOGIN_BACKGROUND_KEY = "login_background";
+const LOGIN_LOGO_KEY = "login_logo";
+const SITE_TITLE_KEY = "site_title";
+const SITE_DESCRIPTION_KEY = "site_description";
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 4 * 1024 * 1024 },
@@ -507,14 +511,15 @@ const upload = multer({
   },
 });
 
+async function setImageSetting(key: string, file: Express.Multer.File | undefined) {
+  if (!file) throw ApiError.badRequest("No image uploaded");
+  const dataUrl = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+  await prisma.setting.upsert({ where: { key }, create: { key, value: dataUrl }, update: { value: dataUrl } });
+  return dataUrl;
+}
+
 adminRouter.post("/settings/login-background", upload.single("image"), async (req, res) => {
-  if (!req.file) throw ApiError.badRequest("No image uploaded");
-  const dataUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
-  await prisma.setting.upsert({
-    where: { key: LOGIN_BACKGROUND_KEY },
-    create: { key: LOGIN_BACKGROUND_KEY, value: dataUrl },
-    update: { value: dataUrl },
-  });
+  const dataUrl = await setImageSetting(LOGIN_BACKGROUND_KEY, req.file);
   res.json({ loginBackground: dataUrl });
 });
 
@@ -523,5 +528,41 @@ adminRouter.delete("/settings/login-background", async (_req, res) => {
   res.status(204).send();
 });
 
+adminRouter.post("/settings/logo", upload.single("image"), async (req, res) => {
+  const dataUrl = await setImageSetting(LOGIN_LOGO_KEY, req.file);
+  res.json({ logo: dataUrl });
+});
+
+adminRouter.delete("/settings/logo", async (_req, res) => {
+  await prisma.setting.deleteMany({ where: { key: LOGIN_LOGO_KEY } });
+  res.status(204).send();
+});
+
+const brandingTextSchema = z.object({
+  siteTitle: z.string().trim().max(80).optional(),
+  siteDescription: z.string().trim().max(300).optional(),
+});
+
+adminRouter.put("/settings/branding-text", validateBody(brandingTextSchema), async (req, res) => {
+  const { siteTitle, siteDescription } = req.body as z.infer<typeof brandingTextSchema>;
+  await Promise.all([
+    siteTitle !== undefined
+      ? prisma.setting.upsert({
+          where: { key: SITE_TITLE_KEY },
+          create: { key: SITE_TITLE_KEY, value: siteTitle },
+          update: { value: siteTitle },
+        })
+      : Promise.resolve(),
+    siteDescription !== undefined
+      ? prisma.setting.upsert({
+          where: { key: SITE_DESCRIPTION_KEY },
+          create: { key: SITE_DESCRIPTION_KEY, value: siteDescription },
+          update: { value: siteDescription },
+        })
+      : Promise.resolve(),
+  ]);
+  res.json({ siteTitle, siteDescription });
+});
+
 export default adminRouter;
-export { LOGIN_BACKGROUND_KEY };
+export { LOGIN_BACKGROUND_KEY, LOGIN_LOGO_KEY, SITE_TITLE_KEY, SITE_DESCRIPTION_KEY };
