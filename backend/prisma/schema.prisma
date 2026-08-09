@@ -1,0 +1,570 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------
+// Auth / Users
+// ------------------------------------------------------------------
+
+enum AuthProvider {
+  PASSWORD
+  GOOGLE
+  APPLE
+}
+
+enum Role {
+  MEMBER
+  TRAINER
+  ADMIN
+}
+
+model User {
+  id            String        @id @default(uuid())
+  name          String
+  email         String        @unique
+  phone         String?       @unique
+  passwordHash  String?
+  provider      AuthProvider  @default(PASSWORD)
+  providerId    String?
+  role          Role          @default(MEMBER)
+  emailVerified Boolean       @default(false)
+  avatarUrl     String?
+  gender        String?
+  dateOfBirth   DateTime?     @db.Date
+  address       String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  otpCodes           OtpCode[]
+  passwordResetTokens PasswordResetToken[]
+  memberships        Membership[]
+  payments           Payment[]
+  workoutLogs        WorkoutLog[]
+  bookings           ClassBooking[]
+  trainerProfile     Trainer?
+  dailyGoals         DailyGoal[]
+  mealLogs           MealLog[]
+  dietPlans          DietPlan[]     @relation("MemberDietPlans")
+
+  // The trainer this member currently trains with (set by admin), distinct
+  // from one-off PersonalTrainerBooking sessions.
+  assignedTrainerId String?
+  assignedTrainer   Trainer? @relation("TrainerMembers", fields: [assignedTrainerId], references: [id], onDelete: SetNull)
+  trainerAssignments TrainerAssignment[] @relation("MemberAssignments")
+  workoutPlans       WorkoutPlan[]       @relation("MemberWorkoutPlans")
+  bodyMeasurements   BodyMeasurement[]
+  progressPhotos     ProgressPhoto[]
+  sentMessages       Message[]           @relation("SentMessages")
+  receivedMessages   Message[]           @relation("ReceivedMessages")
+  ptBookings         PersonalTrainerBooking[] @relation("MemberPtBookings")
+
+  @@index([email])
+}
+
+enum OtpPurpose {
+  SIGNUP
+  LOGIN
+  RESET_PASSWORD
+}
+
+model OtpCode {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code      String
+  purpose   OtpPurpose
+  expiresAt DateTime
+  consumed  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+
+  @@index([userId, purpose])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+// ------------------------------------------------------------------
+// Membership
+// ------------------------------------------------------------------
+
+model MembershipPlan {
+  id            String       @id @default(uuid())
+  name          String
+  description   String?
+  durationDays  Int
+  price         Decimal      @db.Decimal(10, 2)
+  perks         String[]
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+
+  memberships Membership[]
+}
+
+enum MembershipStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+model Membership {
+  id            String            @id @default(uuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId        String
+  plan          MembershipPlan    @relation(fields: [planId], references: [id])
+  status        MembershipStatus  @default(PENDING)
+  startDate     DateTime
+  endDate       DateTime
+  autoRenew     Boolean           @default(false)
+  cardCode      String            @unique @default(uuid())
+  createdAt     DateTime          @default(now())
+
+  payments Payment[]
+
+  @@index([userId])
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  UPI
+  CREDIT_CARD
+  DEBIT_CARD
+  NET_BANKING
+}
+
+enum PaymentIntent {
+  PURCHASE
+  RENEW
+  UPGRADE
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  membershipId  String?
+  membership    Membership?   @relation(fields: [membershipId], references: [id])
+  amount        Decimal       @db.Decimal(10, 2)
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  invoiceNumber String        @unique @default(uuid())
+  createdAt     DateTime      @default(now())
+
+  // Razorpay order/payment linkage. intentType + pendingPlanId record what
+  // should happen to the membership once the Razorpay payment is verified.
+  intentType        PaymentIntent?
+  pendingPlanId     String?
+  razorpayOrderId   String?        @unique
+  razorpayPaymentId String?        @unique
+}
+
+// ------------------------------------------------------------------
+// Workouts
+// ------------------------------------------------------------------
+
+enum ProgramLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model Exercise {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  muscleGroup  String
+  equipment    String?
+  videoUrl     String?
+  thumbnailUrl String?
+  createdAt    DateTime @default(now())
+
+  planExercises WorkoutPlanExercise[]
+  logs          WorkoutLog[]
+}
+
+model WorkoutProgram {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  level       ProgramLevel
+  durationWeeks Int
+  createdAt   DateTime     @default(now())
+
+  plans WorkoutPlan[]
+}
+
+enum WorkoutPlanStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+}
+
+model WorkoutPlan {
+  id         String          @id @default(uuid())
+  userId     String
+  member     User            @relation("MemberWorkoutPlans", fields: [userId], references: [id], onDelete: Cascade)
+  programId  String?
+  program    WorkoutProgram? @relation(fields: [programId], references: [id])
+  name       String
+  dayOfWeek  Int // 0=Sunday .. 6=Saturday
+  createdAt  DateTime        @default(now())
+
+  // Set when a trainer builds/assigns the plan (via the trainer web app)
+  // rather than a member creating their own.
+  trainerId  String?
+  trainer    Trainer?          @relation(fields: [trainerId], references: [id], onDelete: SetNull)
+  status     WorkoutPlanStatus @default(ACTIVE)
+  notes      String?
+
+  exercises WorkoutPlanExercise[]
+
+  @@index([userId])
+  @@index([trainerId])
+}
+
+model WorkoutPlanExercise {
+  id         String      @id @default(uuid())
+  planId     String
+  plan       WorkoutPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  exerciseId String
+  exercise   Exercise    @relation(fields: [exerciseId], references: [id])
+  sets       Int
+  reps       Int
+  restSeconds Int        @default(60)
+  order      Int         @default(0)
+  videoUrl   String?
+  notes      String?
+}
+
+model WorkoutLog {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId   String
+  exercise     Exercise @relation(fields: [exerciseId], references: [id])
+  setsCompleted Int
+  repsCompleted Int
+  weightKg     Float?
+  completedAt  DateTime @default(now())
+
+  @@index([userId, completedAt])
+}
+
+model DailyGoal {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  targetCalories Int?
+  targetWaterMl  Int?
+  targetWorkoutMinutes Int?
+  targetCarbsG   Int?
+  targetProteinG Int?
+  targetFatsG    Int?
+  caloriesLogged Int   @default(0)
+  waterLoggedMl  Int   @default(0)
+  workoutMinutesLogged Int @default(0)
+  carbsLoggedG   Int   @default(0)
+  proteinLoggedG Int   @default(0)
+  fatsLoggedG    Int   @default(0)
+
+  @@unique([userId, date])
+}
+
+// ------------------------------------------------------------------
+// Diet & Nutrition
+// ------------------------------------------------------------------
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+model FoodItem {
+  id           String   @id @default(uuid())
+  name         String
+  mealType     MealType
+  calories     Int
+  carbsG       Float
+  proteinG     Float
+  fatsG        Float
+  servingLabel String
+  createdAt    DateTime @default(now())
+
+  mealLogs      MealLog[]
+  dietPlanMeals DietPlanMeal[]
+}
+
+model MealLog {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  foodItemId String
+  foodItem   FoodItem @relation(fields: [foodItemId], references: [id])
+  mealType   MealType
+  servings   Float    @default(1)
+  loggedAt   DateTime @default(now())
+
+  @@index([userId, loggedAt])
+}
+
+// A structured diet plan assigned to a member by a trainer/admin — distinct
+// from the member's own free-form meal logging (MealLog) above.
+model DietPlan {
+  id        String   @id @default(uuid())
+  memberId  String
+  member    User     @relation("MemberDietPlans", fields: [memberId], references: [id], onDelete: Cascade)
+  trainerId String?
+  trainer   Trainer? @relation(fields: [trainerId], references: [id], onDelete: SetNull)
+  name      String
+  notes     String?
+  targetWaterMl Int?
+  supplements   String?
+  createdAt DateTime @default(now())
+
+  meals DietPlanMeal[]
+
+  @@index([memberId])
+}
+
+model DietPlanMeal {
+  id         String   @id @default(uuid())
+  dietPlanId String
+  dietPlan   DietPlan @relation(fields: [dietPlanId], references: [id], onDelete: Cascade)
+  foodItemId String
+  foodItem   FoodItem @relation(fields: [foodItemId], references: [id])
+  mealType   MealType
+  dayOfWeek  Int // 0=Sunday .. 6=Saturday
+  notes      String?
+}
+
+// ------------------------------------------------------------------
+// Classes & Trainers
+// ------------------------------------------------------------------
+
+enum ClassType {
+  YOGA
+  ZUMBA
+  HIIT
+  CROSSFIT
+  PILATES
+  SPIN
+}
+
+model Trainer {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio         String?
+  specialties String[]
+  ratePerHour Decimal? @db.Decimal(10, 2)
+  qualification   String?
+  certifications  String[]
+  experienceYears Int?
+  salary          Decimal? @db.Decimal(10, 2)
+  joiningDate     DateTime? @db.Date
+  isActive        Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  availability TrainerAvailability[]
+  classes      GymClass[]
+  bookingsAsTrainer PersonalTrainerBooking[]
+  members      User[]   @relation("TrainerMembers")
+  dietPlans    DietPlan[]
+  assignments  TrainerAssignment[]
+  holidays     TrainerHoliday[]
+  workoutPlans WorkoutPlan[]
+  bodyMeasurements BodyMeasurement[]
+  progressPhotos   ProgressPhoto[]
+}
+
+model TrainerAssignment {
+  id           String   @id @default(uuid())
+  trainerId    String
+  trainer      Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  memberId     String
+  member       User     @relation("MemberAssignments", fields: [memberId], references: [id], onDelete: Cascade)
+  trainingType String
+  startDate    DateTime @db.Date
+  endDate      DateTime? @db.Date
+  schedule     String?
+  notes        String?
+  status       AssignmentStatus @default(ACTIVE)
+  createdAt    DateTime @default(now())
+
+  @@index([trainerId])
+  @@index([memberId])
+}
+
+enum AssignmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model TrainerHoliday {
+  id        String   @id @default(uuid())
+  trainerId String
+  trainer   Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  reason    String?
+
+  @@unique([trainerId, date])
+}
+
+model TrainerAvailability {
+  id        String  @id @default(uuid())
+  trainerId String
+  trainer   Trainer @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  dayOfWeek Int
+  startTime String // "HH:mm"
+  endTime   String // "HH:mm"
+  label     String? // e.g. "Morning Batch", "Evening Batch"
+}
+
+model PersonalTrainerBooking {
+  id        String   @id @default(uuid())
+  trainerId String
+  trainer   Trainer  @relation(fields: [trainerId], references: [id])
+  userId    String
+  member    User     @relation("MemberPtBookings", fields: [userId], references: [id], onDelete: Cascade)
+  startTime DateTime
+  endTime   DateTime
+  // UPCOMING | IN_PROGRESS | COMPLETED | PENDING | CANCELLED
+  status      String  @default("UPCOMING")
+  sessionType String?
+  notes       String?
+  createdAt DateTime @default(now())
+}
+
+model GymClass {
+  id          String    @id @default(uuid())
+  name        String
+  type        ClassType
+  description String?
+  trainerId   String?
+  trainer     Trainer?  @relation(fields: [trainerId], references: [id])
+  capacity    Int       @default(20)
+  durationMin Int       @default(60)
+  createdAt   DateTime  @default(now())
+
+  schedules ClassSchedule[]
+}
+
+model ClassSchedule {
+  id        String   @id @default(uuid())
+  classId   String
+  gymClass  GymClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  startsAt  DateTime
+  endsAt    DateTime
+
+  bookings ClassBooking[]
+
+  @@index([startsAt])
+}
+
+enum BookingStatus {
+  BOOKED
+  CANCELLED
+  ATTENDED
+  NO_SHOW
+}
+
+model ClassBooking {
+  id         String        @id @default(uuid())
+  scheduleId String
+  schedule   ClassSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status     BookingStatus @default(BOOKED)
+  createdAt  DateTime      @default(now())
+
+  @@unique([scheduleId, userId])
+}
+
+// ------------------------------------------------------------------
+// Trainer web app: member progress tracking & messaging
+// ------------------------------------------------------------------
+
+model BodyMeasurement {
+  id          String   @id @default(uuid())
+  memberId    String
+  member      User     @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  trainerId   String?
+  trainer     Trainer? @relation(fields: [trainerId], references: [id], onDelete: SetNull)
+  recordedAt  DateTime @default(now())
+  weightKg    Float?
+  bmi         Float?
+  bodyFatPct  Float?
+  chestCm     Float?
+  waistCm     Float?
+  armsCm      Float?
+  thighsCm    Float?
+  shouldersCm Float?
+  notes       String?
+
+  @@index([memberId, recordedAt])
+}
+
+enum ProgressPhotoType {
+  BEFORE
+  AFTER
+  PROGRESS
+}
+
+model ProgressPhoto {
+  id        String            @id @default(uuid())
+  memberId  String
+  member    User              @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  trainerId String?
+  trainer   Trainer?          @relation(fields: [trainerId], references: [id], onDelete: SetNull)
+  photoUrl  String
+  type      ProgressPhotoType
+  takenAt   DateTime          @default(now())
+
+  @@index([memberId, takenAt])
+}
+
+enum MessageAttachmentType {
+  IMAGE
+  DOCUMENT
+}
+
+model Message {
+  id             String                  @id @default(uuid())
+  senderId       String
+  sender         User                    @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId     String
+  receiver       User                    @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  body           String?
+  attachmentUrl  String?
+  attachmentType MessageAttachmentType?
+  createdAt      DateTime                @default(now())
+  readAt         DateTime?
+
+  @@index([senderId, receiverId])
+  @@index([receiverId, senderId])
+}
