@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { inputClass } from '../components/ui'
@@ -76,7 +76,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-bg">
+    <div className="min-h-screen flex bg-bg relative">
+      <Link
+        to="/guide"
+        className="absolute top-5 right-5 z-20 text-sm font-medium text-white/80 hover:text-white bg-white/10 hover:bg-white/15 backdrop-blur px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+      >
+        <span>📖</span> User Guide
+      </Link>
       {/* Hero panel — shows the uploaded background (Settings → Branding)
           if one exists, else a generated gradient + pattern fallback. */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">

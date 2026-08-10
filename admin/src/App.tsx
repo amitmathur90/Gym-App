@@ -4,6 +4,7 @@ import { useAuth } from './lib/auth'
 import Layout from './components/Layout'
 import { Spinner } from './components/ui'
 import LoginPage from './pages/LoginPage'
+import UserGuidePage from './pages/UserGuidePage'
 import DashboardPage from './pages/DashboardPage'
 import MembersPage from './pages/MembersPage'
 import MemberProfilePage from './pages/MemberProfilePage'
@@ -54,6 +55,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/guide" element={<UserGuidePage />} />
       <Route element={<ProtectedLayout />}>
         <Route path="/" element={<RoleHome />} />
         <Route path="/members" element={<RoleGate role="ADMIN"><MembersPage /></RoleGate>} />
